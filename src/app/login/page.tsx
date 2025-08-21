@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import LoginForm from "@/components/forms/loginform";
+import { LoginForm } from "@/components/forms/auth-forms";
 import {
   Card,
   CardContent,
@@ -17,8 +17,7 @@ export const metadata: Metadata = {
 
 export default async function Login() {
   const cookieJar = await cookies();
-  const authed = cookieJar.get("access_token");
-  console.log(authed);
+  const authed = cookieJar.get("refresh_token");
 
   if (authed) {
     redirect("/dashboard");

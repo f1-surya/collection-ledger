@@ -86,3 +86,98 @@ export async function login(
 
   return { ...data };
 }
+
+interface SignupState {
+  name?: string;
+  email?: string;
+  password?: string;
+  passwordRepeat?: string;
+  errors?: {
+    name?: string;
+    email?: string;
+    password?: string;
+    passwordRepeat?: string;
+  };
+}
+
+const signupSchema = z
+  .object({
+    name: z
+      .string()
+      .min(3, { message: "Name must be at least 3 characters long" }),
+    email: z.email(),
+    password: passwordSchema,
+    passwordRepeat: passwordSchema,
+  })
+  .refine((data) => data.password === data.passwordRepeat, {
+    message: "Passwords do not match.",
+    path: ["passwordRepeat"],
+  });
+
+export async function signup(
+  _prev: SignupState,
+  formData: FormData,
+): Promise<SignupState> {
+  const data = {
+    name: formData.get("name")?.toString(),
+    email: formData.get("email")?.toString(),
+    password: formData.get("password")?.toString(),
+    passwordRepeat: formData.get("passwordRepeat")?.toString(),
+  };
+
+  const validation = signupSchema.safeParse(data);
+  if (!validation.success) {
+    const errors = z.flattenError(validation.error).fieldErrors;
+    return {
+      errors: {
+        name: (errors.name ?? []).at(0),
+        email: (errors.email ?? []).at(0),
+        password: (errors.password ?? []).at(0),
+        passwordRepeat: (errors.passwordRepeat ?? []).at(0),
+      },
+      ...data,
+    };
+  }
+
+  try {
+    const res = await fetch(`${process.env.API_URL}/auth/signup`, {
+      method: "POST",
+      body: JSON.stringify(validation.data),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const cookieJar = await cookies();
+    if (res.ok) {
+      const tokens = await res.json();
+      cookieJar.set({
+        name: "access_token",
+        value: tokens.accessToken,
+        httpOnly: true,
+        sameSite: "strict",
+        maxAge: 60 * 15,
+      });
+      cookieJar.set({
+        name: "refresh_token",
+        value: tokens.refreshToken,
+        httpOnly: true,
+        sameSite: "strict",
+        maxAge: 60 * 60 * 24,
+      });
+      redirect("/create-company");
+    } else {
+      const resData = await res.json();
+      return {
+        errors: {
+          name: resData.name,
+          email: resData.email,
+          password: resData.password,
+        },
+        ...data,
+      };
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return { ...data };
+}

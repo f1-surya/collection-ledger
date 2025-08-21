@@ -3,8 +3,8 @@ import { Label } from "../ui/label";
 
 interface FormFieldProps {
   id: string;
-  name: string;
   type: string;
+  placeHolder?: string;
   required: boolean;
   defaultValue?: string;
   label: string;
@@ -13,8 +13,8 @@ interface FormFieldProps {
 
 export function FormField({
   id,
-  name,
   type,
+  placeHolder,
   required = false,
   defaultValue,
   label,
@@ -32,9 +32,10 @@ export function FormField({
       </Label>
       <Input
         id={id}
-        name={name}
+        name={id}
         type={type}
         required={required}
+        placeholder={placeHolder ?? label}
         defaultValue={defaultValue}
         aria-invalid={error !== undefined}
       />
