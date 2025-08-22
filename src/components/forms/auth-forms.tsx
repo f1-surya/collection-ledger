@@ -29,6 +29,11 @@ export function LoginForm() {
         defaultValue={state.password}
         error={state.passwordError}
       />
+      {state.error && (
+        <div className="w-full bg-destructive/30 rounded p-4">
+          {state.error}
+        </div>
+      )}
       <Button className="w-full" type="submit">
         {pending ? <LoaderCircle className="animate-spin" /> : "Login"}
       </Button>
@@ -77,6 +82,11 @@ export function SignupForm() {
         defaultValue={state.passwordRepeat}
         error={state.errors?.passwordRepeat}
       />
+      {state.errorMessage && (
+        <div className="w-full bg-destructive/30 rounded p-4">
+          {state.errorMessage}
+        </div>
+      )}
       <Button className="w-full" type="submit">
         {pending ? <LoaderCircle className="animate-spin" /> : "Signup"}
       </Button>

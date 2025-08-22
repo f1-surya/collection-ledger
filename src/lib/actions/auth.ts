@@ -10,6 +10,7 @@ export interface LoginFormState {
   passwordError?: string;
   email?: string;
   password?: string;
+  error?: string;
 }
 
 const passwordSchema = z
@@ -74,17 +75,20 @@ export async function login(
       redirect("/dashboard");
     } else {
       const resData = await res.json();
+      console.error(resData);
+
       return {
         emailError: resData.email,
         passwordError: resData.password,
         ...data,
+        error: "Something went wrong, please try again later.",
       };
     }
   } catch (e) {
     console.error(e);
   }
 
-  return { ...data };
+  return { ...data, error: "Something went wrong, please try again later." };
 }
 
 interface SignupState {
@@ -98,6 +102,7 @@ interface SignupState {
     password?: string;
     passwordRepeat?: string;
   };
+  errorMessage?: string;
 }
 
 const signupSchema = z
@@ -167,6 +172,8 @@ export async function signup(
       redirect("/create-company");
     } else {
       const resData = await res.json();
+      console.error(resData);
+
       return {
         errors: {
           name: resData.name,
@@ -174,10 +181,14 @@ export async function signup(
           password: resData.password,
         },
         ...data,
+        errorMessage: "Something went wrong, please try again later.",
       };
     }
   } catch (e) {
     console.error(e);
   }
-  return { ...data };
+  return {
+    ...data,
+    errorMessage: "Something went wrong, please try again later.",
+  };
 }
