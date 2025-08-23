@@ -1,5 +1,10 @@
 {
   "Signup": {
     "signupDescription": "To continue to the app please create an account"
+  },
+  "CreateCompany": {
+    "title": "Almost done",
+    "description": "Enter your company's basic details",
+    "save": "Save"
   }
 }

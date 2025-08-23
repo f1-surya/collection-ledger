@@ -109,7 +109,8 @@ const signupSchema = z
   .object({
     name: z
       .string()
-      .min(3, { message: "Name must be at least 3 characters long" }),
+      .min(3, { message: "Name must be at least 3 characters long" })
+      .trim(),
     email: z.email(),
     password: passwordSchema,
     passwordRepeat: passwordSchema,

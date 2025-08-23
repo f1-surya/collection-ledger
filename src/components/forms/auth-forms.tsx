@@ -34,7 +34,7 @@ export function LoginForm() {
           {state.error}
         </div>
       )}
-      <Button className="w-full" type="submit">
+      <Button className="w-full" type="submit" disabled={pending}>
         {pending ? <LoaderCircle className="animate-spin" /> : "Login"}
       </Button>
     </form>
@@ -87,7 +87,7 @@ export function SignupForm() {
           {state.errorMessage}
         </div>
       )}
-      <Button className="w-full" type="submit">
+      <Button className="w-full" type="submit" disabled={pending}>
         {pending ? <LoaderCircle className="animate-spin" /> : "Signup"}
       </Button>
     </form>

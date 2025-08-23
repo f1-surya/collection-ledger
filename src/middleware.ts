@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 export default async function middleware(req: NextRequest) {
   if (!req.cookies.has("access_token")) {
     if (!req.cookies.has("refresh_token")) {
-      return NextResponse.redirect("/login");
+      return NextResponse.redirect(new URL("/login", req.url));
     }
     const redirectUrl = new URL("/api/refresh-auth", req.url);
     redirectUrl.searchParams.set("redirect", req.nextUrl.pathname);
