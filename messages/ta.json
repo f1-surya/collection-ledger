@@ -6,5 +6,13 @@
     "title": "கிட்டத்தட்ட முடிந்தது",
     "description": "உங்கள் நிறுவனத்தின் அடிப்படை விவரங்களை உள்ளிடவும்",
     "save": "சேமிக்க"
+  },
+  "Appbar": {
+    "home": "Home",
+    "connections": "இணைப்புகள்",
+    "paymentHistory": "கட்டண வரலாறு",
+    "packs": "Base packs",
+    "areas": "Areas",
+    "settings": "அமைப்புகள்"
   }
 }
