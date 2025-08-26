@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import {
   Card,
@@ -34,6 +36,14 @@ export default function ConnectionsList({
       );
     }
   }, [search, connections]);
+
+  if (connections.length === 0) {
+    return (
+      <div className="flex justify-center items-center text-center">
+        You don't have any connections yet.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

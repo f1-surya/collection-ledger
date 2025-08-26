@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { columns } from "@/components/connections/columns";
-import ConnectionView from "@/components/connections/connections";
+import ConnectionsList from "@/components/connections/connections-list";
 import { ConnectionTable } from "@/components/connections/connections-table";
 
 export default async function Connections() {
@@ -21,9 +21,15 @@ export default async function Connections() {
   }
   const connections = await res.json();
 
+  const isMobile = cookieJar.get("is-mobile")?.value === "true";
+
   return (
     <main className="p-4">
-      <ConnectionView connections={connections} />
+      {isMobile ? (
+        <ConnectionsList connections={connections} />
+      ) : (
+        <ConnectionTable columns={columns} data={connections} />
+      )}
     </main>
   );
 }
