@@ -8,7 +8,7 @@ export default function DeviceDetector() {
 
     const currentCookie = document.cookie
       .split(";")
-      .find((row) => row.startsWith(" is-mobile"))
+      .find((row) => row.trimStart().startsWith("is-mobile"))
       ?.split("=")[1];
 
     if (isMobile !== currentCookie) {

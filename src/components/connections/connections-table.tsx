@@ -9,6 +9,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -20,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import CreateConnection from "./create";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -31,6 +33,7 @@ export function ConnectionTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [newConnection, setNewConnection] = useState(false);
   const table = useReactTable({
     data,
     columns,
@@ -50,7 +53,7 @@ export function ConnectionTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="flex items-center gap-4 w-full py-4">
         <Input
           placeholder="Filter by name"
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
@@ -59,6 +62,12 @@ export function ConnectionTable<TData, TValue>({
           }
           className="max-w-sm"
         />
+        <Button
+          className="w-18"
+          onClick={() => setNewConnection(!newConnection)}
+        >
+          <Plus />
+        </Button>
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
@@ -123,6 +132,7 @@ export function ConnectionTable<TData, TValue>({
           Next
         </Button>
       </div>
+      <CreateConnection open={newConnection} onOpenChange={setNewConnection} />
     </div>
   );
 }

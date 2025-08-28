@@ -3,9 +3,9 @@ import { Label } from "../ui/label";
 
 interface FormFieldProps {
   id: string;
-  type: string;
+  type?: string;
   placeHolder?: string;
-  required: boolean;
+  required?: boolean;
   defaultValue?: string;
   label: string;
   error?: string;
@@ -13,7 +13,7 @@ interface FormFieldProps {
 
 export function FormField({
   id,
-  type,
+  type = "text",
   placeHolder,
   required = false,
   defaultValue,

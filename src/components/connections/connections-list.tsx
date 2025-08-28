@@ -1,6 +1,9 @@
 "use client";
 
+import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { Button } from "../ui/button";
 import {
   Card,
   CardAction,
@@ -12,6 +15,7 @@ import {
 import { Input } from "../ui/input";
 import { ScrollArea } from "../ui/scroll-area";
 import type { Connection } from "./columns";
+import CreateConnection from "./create";
 
 export default function ConnectionsList({
   connections,
@@ -20,6 +24,8 @@ export default function ConnectionsList({
 }) {
   const [search, setSearch] = useState("");
   const [filtered, setFiltered] = useState(connections);
+  const [newConnection, setNewConnection] = useState(false);
+  const t = useTranslations("Connections");
   const now = new Date();
 
   useEffect(() => {
@@ -37,53 +43,59 @@ export default function ConnectionsList({
     }
   }, [search, connections]);
 
-  if (connections.length === 0) {
-    return (
-      <div className="flex justify-center items-center text-center">
-        You don't have any connections yet.
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
-      <Input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        type="search"
-        placeholder="Enter name or smartcard"
-      />
-      <ScrollArea className="h-[87dvh]">
-        <div className="flex flex-col space-y-2">
-          {filtered.map((connection) => {
-            let color = "bg-red-600";
-            if (connection.lastPayment) {
-              const lastPayment = new Date(connection.lastPayment);
-              if (
-                lastPayment.getMonth() === now.getMonth() &&
-                lastPayment.getFullYear() === now.getFullYear()
-              ) {
-                color = "bg-green-600";
-              }
-            }
+      {connections.length === 0 ? (
+        <div className="text-center">{t("noConnections")}</div>
+      ) : (
+        <>
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            type="search"
+            placeholder="Enter name or smartcard"
+          />
+          <ScrollArea className="h-[87dvh]">
+            <div className="flex flex-col space-y-2">
+              {filtered.map((connection) => {
+                let color = "bg-red-600";
+                if (connection.lastPayment) {
+                  const lastPayment = new Date(connection.lastPayment);
+                  if (
+                    lastPayment.getMonth() === now.getMonth() &&
+                    lastPayment.getFullYear() === now.getFullYear()
+                  ) {
+                    color = "bg-green-600";
+                  }
+                }
 
-            return (
-              <Card key={connection.id}>
-                <CardHeader>
-                  <CardTitle>{connection.name}</CardTitle>
-                  <CardDescription>{connection.boxNumber}</CardDescription>
-                  <CardAction>
-                    <div className={`w-4 h-4 rounded-full ${color} m-4`} />
-                  </CardAction>
-                </CardHeader>
-                <CardContent>
-                  <p>{connection.basePack.name}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </ScrollArea>
+                return (
+                  <Card key={connection.id}>
+                    <CardHeader>
+                      <CardTitle>{connection.name}</CardTitle>
+                      <CardDescription>{connection.boxNumber}</CardDescription>
+                      <CardAction>
+                        <div className={`w-4 h-4 rounded-full ${color} m-4`} />
+                      </CardAction>
+                    </CardHeader>
+                    <CardContent>
+                      <p>{connection.basePack.name}</p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </>
+      )}
+      <Button
+        className="absolute right-0 bottom-0 m-6 w-14 h-14"
+        size="icon"
+        onClick={() => setNewConnection(!newConnection)}
+      >
+        <Plus />
+      </Button>
+      <CreateConnection open={newConnection} onOpenChange={setNewConnection} />
     </div>
   );
 }

@@ -14,5 +14,8 @@
     "packs": "Base packs",
     "areas": "Areas",
     "settings": "அமைப்புகள்"
+  },
+  "Connections": {
+    "noConnections": "உங்களுக்கு இன்னும் எந்த இணைப்புகளும் இல்லை."
   }
 }

@@ -5,14 +5,13 @@ import { type NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   const cookieJar = await cookies();
   const destiny = req.nextUrl.searchParams.get("redirect");
-  console.log(destiny);
-  const refreshToken = cookieJar.get("refresh_token");
+  const refreshToken = cookieJar.get("refresh_token")?.value;
   if (!refreshToken) {
     redirect("/login");
   }
   const res = await fetch(`${process.env.API_URL}/auth/refresh`, {
     method: "POST",
-    body: JSON.stringify({ token: refreshToken.value }),
+    body: JSON.stringify({ token: refreshToken }),
     headers: {
       "Content-Type": "application/json",
     },

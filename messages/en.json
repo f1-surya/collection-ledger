@@ -14,5 +14,8 @@
     "packs": "Base packs",
     "areas": "Areas",
     "settings": "Settings"
+  },
+  "Connections": {
+    "noConnections": "You don't have any connections yet."
   }
 }
