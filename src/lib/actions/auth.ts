@@ -48,44 +48,40 @@ export async function login(
     };
   }
 
-  try {
-    const res = await fetch(`${process.env.API_URL}/auth/login`, {
-      method: "POST",
-      body: JSON.stringify(validationRes.data),
-      headers: {
-        "Content-Type": "application/json",
-      },
+  const res = await fetch(`${process.env.API_URL}/auth/login`, {
+    method: "POST",
+    body: JSON.stringify(validationRes.data),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (res.ok) {
+    const tokens = await res.json();
+    cookieJar.set({
+      name: "access_token",
+      value: tokens.accessToken,
+      httpOnly: true,
+      sameSite: "strict",
+      maxAge: 60 * 15,
     });
-    if (res.ok) {
-      const tokens = await res.json();
-      cookieJar.set({
-        name: "access_token",
-        value: tokens.accessToken,
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 60 * 15,
-      });
-      cookieJar.set({
-        name: "refresh_token",
-        value: tokens.refreshToken,
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 60 * 60 * 24,
-      });
-      redirect("/dashboard");
-    } else {
-      const resData = await res.json();
-      console.error(resData);
+    cookieJar.set({
+      name: "refresh_token",
+      value: tokens.refreshToken,
+      httpOnly: true,
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24,
+    });
+    redirect("/dashboard");
+  } else {
+    const resData = await res.json();
+    console.error(resData);
 
-      return {
-        emailError: resData.email,
-        passwordError: resData.password,
-        ...data,
-        error: "Something went wrong, please try again later.",
-      };
-    }
-  } catch (e) {
-    console.error(e);
+    return {
+      emailError: resData.email,
+      passwordError: resData.password,
+      ...data,
+      error: "Something went wrong, please try again later.",
+    };
   }
 
   return { ...data, error: "Something went wrong, please try again later." };
@@ -145,49 +141,46 @@ export async function signup(
     };
   }
 
-  try {
-    const res = await fetch(`${process.env.API_URL}/auth/signup`, {
-      method: "POST",
-      body: JSON.stringify(validation.data),
-      headers: {
-        "Content-Type": "application/json",
-      },
+  const res = await fetch(`${process.env.API_URL}/auth/signup`, {
+    method: "POST",
+    body: JSON.stringify(validation.data),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  const cookieJar = await cookies();
+  if (res.ok) {
+    const tokens = await res.json();
+    cookieJar.set({
+      name: "access_token",
+      value: tokens.accessToken,
+      httpOnly: true,
+      sameSite: "strict",
+      maxAge: 60 * 15,
     });
-    const cookieJar = await cookies();
-    if (res.ok) {
-      const tokens = await res.json();
-      cookieJar.set({
-        name: "access_token",
-        value: tokens.accessToken,
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 60 * 15,
-      });
-      cookieJar.set({
-        name: "refresh_token",
-        value: tokens.refreshToken,
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 60 * 60 * 24,
-      });
-      redirect("/create-company");
-    } else {
-      const resData = await res.json();
-      console.error(resData);
+    cookieJar.set({
+      name: "refresh_token",
+      value: tokens.refreshToken,
+      httpOnly: true,
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24,
+    });
+    redirect("/create-company");
+  } else {
+    const resData = await res.json();
+    console.error(resData);
 
-      return {
-        errors: {
-          name: resData.name,
-          email: resData.email,
-          password: resData.password,
-        },
-        ...data,
-        errorMessage: "Something went wrong, please try again later.",
-      };
-    }
-  } catch (e) {
-    console.error(e);
+    return {
+      errors: {
+        name: resData.name,
+        email: resData.email,
+        password: resData.password,
+      },
+      ...data,
+      errorMessage: "Something went wrong, please try again later.",
+    };
   }
+
   return {
     ...data,
     errorMessage: "Something went wrong, please try again later.",
