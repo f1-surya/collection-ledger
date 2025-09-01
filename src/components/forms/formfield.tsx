@@ -9,6 +9,7 @@ interface FormFieldProps {
   defaultValue?: string;
   label: string;
   error?: string;
+  disabled?: boolean;
 }
 
 export function FormField({
@@ -19,6 +20,7 @@ export function FormField({
   defaultValue,
   label,
   error,
+  disabled,
 }: FormFieldProps) {
   return (
     <div data-slot="form-item" className="grid gap-2">
@@ -38,6 +40,7 @@ export function FormField({
         placeholder={placeHolder ?? label}
         defaultValue={defaultValue}
         aria-invalid={error !== undefined}
+        disabled={disabled}
       />
       {error && (
         <p data-slot="form-message" className="text-destructive text-sm">

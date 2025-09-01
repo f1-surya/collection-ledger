@@ -15,10 +15,11 @@ export function LoginForm() {
         id="email"
         type="email"
         label="Email"
-        placeHolder="example@mail.com"
+        placeHolder="rick@dalton.com"
         required
         defaultValue={state.email}
         error={state.emailError}
+        disabled={pending}
       />
       <FormField
         id="password"
@@ -28,6 +29,7 @@ export function LoginForm() {
         required
         defaultValue={state.password}
         error={state.passwordError}
+        disabled={pending}
       />
       {state.error && (
         <div className="w-full bg-destructive/30 rounded p-4">
@@ -54,6 +56,7 @@ export function SignupForm() {
         required
         defaultValue={state.name}
         error={state.errors?.name}
+        disabled={pending}
       />
       <FormField
         id="email"
@@ -63,6 +66,7 @@ export function SignupForm() {
         required
         defaultValue={state.email}
         error={state.errors?.email}
+        disabled={pending}
       />
       <FormField
         id="password"
@@ -72,6 +76,7 @@ export function SignupForm() {
         required
         defaultValue={state.password}
         error={state.errors?.password}
+        disabled={pending}
       />
       <FormField
         id="passwordRepeat"
@@ -81,6 +86,7 @@ export function SignupForm() {
         required
         defaultValue={state.passwordRepeat}
         error={state.errors?.passwordRepeat}
+        disabled={pending}
       />
       {state.errorMessage && (
         <div className="w-full bg-destructive/30 rounded p-4">
