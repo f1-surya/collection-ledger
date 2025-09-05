@@ -74,13 +74,14 @@ export async function login(
     redirect("/dashboard");
   } else {
     const resData = await res.json();
-    console.error(resData);
+    if (res.status === 500) {
+      console.error(resData);
+    }
 
     return {
       emailError: resData.email,
       passwordError: resData.password,
       ...data,
-      error: "Something went wrong, please try again later.",
     };
   }
 
@@ -168,7 +169,9 @@ export async function signup(
     redirect("/create-company");
   } else {
     const resData = await res.json();
-    console.error(resData);
+    if (res.status === 500) {
+      console.error(resData);
+    }
 
     return {
       errors: {
@@ -177,7 +180,6 @@ export async function signup(
         password: resData.password,
       },
       ...data,
-      errorMessage: "Something went wrong, please try again later.",
     };
   }
 

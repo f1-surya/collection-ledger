@@ -20,10 +20,19 @@ interface CompanyFormState {
 }
 
 const companySchema = z.object({
-  name: z.string().min(10).trim(),
+  name: z
+    .string()
+    .min(5, { message: "Company name should have at least 5 characters." })
+    .trim(),
   email: z.email(),
-  phone: z.string().min(10).trim(),
-  address: z.string().min(10).trim(),
+  phone: z
+    .string()
+    .min(10, { message: "Phone number should contain at least 10 digits." })
+    .trim(),
+  address: z
+    .string()
+    .min(10, { message: "Address should have at least 10 characters." })
+    .trim(),
 });
 
 export async function saveCompany(

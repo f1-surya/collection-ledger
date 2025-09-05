@@ -45,7 +45,7 @@ export function CreateCompanyForm() {
           htmlFor="address"
           className={`${state.errors?.address && "text-destructive"}`}
         >
-          Company address*:
+          Company address:
         </Label>
         <Textarea
           id="address"
