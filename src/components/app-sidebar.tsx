@@ -26,6 +26,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher } from "@/lib/fetcher";
@@ -67,6 +68,7 @@ export function AppSidebar() {
   const { isLoading, data } = useSwr("/api/company", fetcher);
   const t = useTranslations("Appbar");
   const pathname = usePathname();
+  const { toggleSidebar } = useSidebar();
 
   return (
     <Sidebar>
@@ -88,7 +90,7 @@ export function AppSidebar() {
             {links.map((link) => (
               <SidebarMenuItem key={link.href}>
                 <SidebarMenuButton asChild isActive={pathname === link.href}>
-                  <Link href={link.href}>
+                  <Link href={link.href} onNavigate={toggleSidebar}>
                     <link.icon /> <span>{t(link.name)}</span>
                   </Link>
                 </SidebarMenuButton>

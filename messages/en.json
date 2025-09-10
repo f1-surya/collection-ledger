@@ -17,5 +17,18 @@
   },
   "Connections": {
     "noConnections": "You don't have any connections yet."
+  },
+  "Area": {
+    "list": "Here is a list of all your areas",
+    "addArea": "Create a new area",
+    "connectionsCount": " connections are in this area.",
+    "confirmDelete": "Confirm delete",
+    "deleteDescription": "Are you sure you want to delete this area? It cannot be undone!.",
+    "cantDelete": "Cannot delete area",
+    "reason": "There are a few connections in this area so it cannot be deleted.",
+    "deleteFailTitle": "Unable to delete area",
+    "deleteFailDescription": "Something went wrong while deleting the area. Please try again later.",
+    "editTitle": "Rename area",
+    "editFailTitle": "Unable to rename area"
   }
 }
