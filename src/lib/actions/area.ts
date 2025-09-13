@@ -1,10 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { authedFetch } from "../authed-fetch";
 import "server-only";
-import { a } from "vitest/dist/chunks/suite.d.FvehnV49.js";
 import z from "zod";
+import { authedFetch } from "../authed-fetch";
 import { tryCatch } from "../try-catch";
 
 export async function saveArea(formData: FormData) {
@@ -15,7 +14,7 @@ export async function saveArea(formData: FormData) {
     "/area",
     {
       method: "POST",
-      body: JSON.stringify({ name: areaName }),
+      body: JSON.stringify({ name: areaName.toUpperCase() }),
     },
     true,
   );
@@ -40,7 +39,7 @@ export async function deleteArea(formData: FormData) {
 
 const updateSchema = z.object({
   id: z.string(),
-  name: z.string(),
+  name: z.string().toUpperCase(),
 });
 
 export async function editArea(formData: FormData) {

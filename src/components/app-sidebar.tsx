@@ -50,7 +50,7 @@ const links = [
   {
     name: "packs",
     icon: Package,
-    href: "/dashboard/packs",
+    href: "/dashboard/base-packs",
   },
   {
     name: "areas",
