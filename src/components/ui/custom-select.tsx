@@ -1,4 +1,5 @@
 import { Check, ChevronsUpDown } from "lucide-react";
+import { useState } from "react";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
@@ -41,6 +42,8 @@ export default function CustomSelect<
   required,
   items,
 }: CustomSelectProps<TFieldValues, TName>) {
+  const [open, setOpen] = useState(false);
+
   return (
     <FormField
       control={control}
@@ -51,7 +54,7 @@ export default function CustomSelect<
             {label}
             {required && "*"}:
           </FormLabel>
-          <Popover>
+          <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
@@ -80,7 +83,10 @@ export default function CustomSelect<
                     <CommandItem
                       key={item.id}
                       value={item.id}
-                      onSelect={() => field.onChange(item.id)}
+                      onSelect={() => {
+                        field.onChange(item.id);
+                        setOpen(false);
+                      }}
                     >
                       {item.name}
                       <Check

@@ -4,12 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import useSWR from "swr";
 import z from "zod";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { fetcher } from "@/lib/fetcher";
-import { Button } from "../ui/button";
-import { CustomFormField } from "../ui/custom-field";
-import CustomSelect from "../ui/custom-select";
-import { Form } from "../ui/form";
+import { Button } from "@/components/ui/button";
+import { CustomFormField } from "@/components/ui/custom-field";
+import CustomSelect from "@/components/ui/custom-select";
+import { Form } from "@/components/ui/form";
 import {
   Sheet,
   SheetClose,
@@ -18,7 +16,9 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "../ui/sheet";
+} from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { fetcher } from "@/lib/fetcher";
 
 interface Props {
   open: boolean;
@@ -50,7 +50,6 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
   const { data: basePacks } = useSWR("/api/packs", fetcher);
 
   const save = async (data: z.infer<typeof connectionSchema>) => {
-    console.log(data);
     const res = await fetch("/api/connection", {
       method: "POST",
       body: JSON.stringify(data),
@@ -65,7 +64,7 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
       const errors = (await res.json()) as { [key: string]: string };
       for (const field in errors) {
         // @ts-expect-error
-        form.setError(field, [errors[field]]);
+        form.setError(field, { message: [errors[field]] });
       }
     }
   };

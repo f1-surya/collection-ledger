@@ -11,8 +11,8 @@ import {
 } from "@tanstack/react-table";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -20,7 +20,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
+} from "@/components/ui/table";
 import CreateConnection from "./create";
 
 interface DataTableProps<TData, TValue> {
