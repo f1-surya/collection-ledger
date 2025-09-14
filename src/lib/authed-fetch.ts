@@ -1,11 +1,40 @@
 import { cookies } from "next/headers";
 import "server-only";
 
-export async function authedFetch<T>(
+type Success<T> = {
+  data: T;
+  error: null;
+};
+
+type Failure<E> = {
+  data: null;
+  error: E;
+};
+
+type NoJson = {
+  data: null;
+  error: null;
+};
+
+type Result<T, E = Error> = Success<T> | Failure<E> | NoJson;
+
+export async function authedFetch<T, E = Error>(
+  url: string,
+  options?: RequestInit,
+  noJson?: false,
+): Promise<Success<T> | Failure<E>>;
+
+export async function authedFetch<E = Error>(
+  url: string,
+  options: RequestInit | undefined,
+  noJson: true,
+): Promise<NoJson | Failure<E>>;
+
+export async function authedFetch<T, E = Error>(
   url: string,
   options?: RequestInit,
   noJson?: boolean,
-) {
+): Promise<Result<T, E>> {
   const cookieJar = await cookies();
   const defaultHeaders: HeadersInit = {
     "Content-Type": "application/json",
@@ -20,12 +49,17 @@ export async function authedFetch<T>(
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! Status: ${res.status}`);
+      return {
+        data: null,
+        error: errorData.message || (`HTTP error! Status: ${res.status}` as E),
+      };
     }
 
-    if (noJson) return;
+    if (noJson) return { data: null, error: null };
 
-    return res.json() as Promise<T>;
+    const data = (await res.json()) as T;
+
+    return { data, error: null };
   } catch (e) {
     console.error(e);
     throw e;

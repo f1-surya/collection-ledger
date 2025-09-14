@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { saveArea } from "@/lib/actions/area";
 import { authedFetch } from "@/lib/authed-fetch";
-import { tryCatch } from "@/lib/try-catch";
 import type { Area } from "./_components/areas";
 import AreasList from "./_components/areas";
 
@@ -24,9 +23,7 @@ export default async function Areas({
 }: {
   searchParams: Promise<{ errorDelete?: boolean; errorEdit?: boolean }>;
 }) {
-  const { data: areas, error } = await tryCatch<Area[] | undefined>(
-    authedFetch<Area[]>("/area"),
-  );
+  const { data: areas, error } = await authedFetch<Area[]>("/area");
   const [params, t] = await Promise.all([
     searchParams,
     getTranslations("Area"),

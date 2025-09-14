@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/dialog";
 import { saveBasePack } from "@/lib/actions/base-packs";
 import { authedFetch } from "@/lib/authed-fetch";
-import { tryCatch } from "@/lib/try-catch";
 import { type BasePack, BasePackList } from "./_components/base-packs";
 
 export default async function Packs({
@@ -23,9 +22,7 @@ export default async function Packs({
 }: {
   searchParams: Promise<{ errorDelete: boolean; errorEdit: boolean }>;
 }) {
-  const { data: packs, error } = await tryCatch<BasePack[] | undefined>(
-    authedFetch<BasePack[]>("/pack"),
-  );
+  const { data: packs, error } = await authedFetch<BasePack[]>("/pack");
   const [params, t] = await Promise.all([
     searchParams,
     getTranslations("BasePack"),
