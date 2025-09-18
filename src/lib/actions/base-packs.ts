@@ -67,8 +67,10 @@ export async function editBasePack(formData: FormData) {
 
   if (!success) return;
 
-  const { error } = await tryCatch(
-    authedFetch("/pack", { method: "PUT", body: JSON.stringify(data) }, true),
+  const { error } = await authedFetch(
+    "/pack",
+    { method: "PUT", body: JSON.stringify(data) },
+    true,
   );
 
   if (error) {

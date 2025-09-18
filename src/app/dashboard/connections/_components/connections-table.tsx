@@ -21,6 +21,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Connection } from "./columns";
+import { ConnectionDetails } from "./connection-details";
 import CreateConnection from "./create";
 
 interface DataTableProps<TData, TValue> {
@@ -32,10 +34,14 @@ export function ConnectionTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const [connections, setConnections] = useState(data);
+  const [currConnection, setCurrConnection] = useState<
+    Connection | undefined
+  >();
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [newConnection, setNewConnection] = useState(false);
   const table = useReactTable({
-    data,
+    data: connections,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onColumnFiltersChange: setColumnFilters,
@@ -51,11 +57,24 @@ export function ConnectionTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const markAsPaid = (connectionId: number) => {
+    setConnections((prevCons) =>
+      prevCons.map((con) =>
+        // @ts-expect-error
+        con.id === connectionId
+          ? { ...con, lastPayment: new Date().toISOString() }
+          : con,
+      ),
+    );
+    setCurrConnection(undefined);
+  };
+
   return (
     <div>
       <div className="flex items-center gap-4 w-full py-4">
         <Input
           placeholder="Filter by name"
+          type="search"
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -90,7 +109,10 @@ export function ConnectionTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  onClick={() => setCurrConnection(row.original as Connection)}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
@@ -133,6 +155,11 @@ export function ConnectionTable<TData, TValue>({
         </Button>
       </div>
       <CreateConnection open={newConnection} onOpenChange={setNewConnection} />
+      <ConnectionDetails
+        connection={currConnection}
+        onOpenChange={setCurrConnection}
+        callback={markAsPaid}
+      />
     </div>
   );
 }

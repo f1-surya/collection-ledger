@@ -50,8 +50,10 @@ export async function editArea(formData: FormData) {
 
   if (!success) return;
 
-  const { error } = await tryCatch(
-    authedFetch("/area", { method: "PUT", body: JSON.stringify(data) }, true),
+  const { error } = await authedFetch(
+    "/area",
+    { method: "PUT", body: JSON.stringify(data) },
+    true,
   );
 
   if (error) {

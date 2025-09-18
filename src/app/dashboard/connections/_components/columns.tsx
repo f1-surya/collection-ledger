@@ -38,4 +38,23 @@ export const columns: ColumnDef<Connection>[] = [
     accessorFn: (connection) => connection.basePack.name,
     header: "Pack",
   },
+  {
+    id: "customerPrice",
+    header: () => <div className="font-semibold">MRP ₹</div>,
+    accessorFn: (con) => con.basePack.customerPrice,
+  },
+  {
+    accessorKey: "lastPayment",
+    header: () => <div className="font-semibold">Last payment</div>,
+    cell: ({ row }) => {
+      const lastPayment = row.getValue("lastPayment");
+      if (!lastPayment) return "Nil";
+
+      return new Date(lastPayment as string).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    },
+  },
 ];

@@ -31,7 +31,10 @@ const connectionSchema = z.object({
     .min(4, { message: "Name should contain at least 4 characterns" })
     .trim()
     .toUpperCase(),
-  phone: z.string().min(10, { message: "Not a valid phone number" }).trim(),
+  phoneNumber: z
+    .string()
+    .min(10, { message: "Not a valid phone number" })
+    .trim(),
   boxNumber: z
     .string()
     .min(10, { message: "Smartcard should be at least 10 characters long" })
@@ -95,7 +98,7 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
               />
               <CustomFormField
                 control={form.control}
-                name="phone"
+                name="phoneNumber"
                 label="Phone"
                 placeholder="+91-9874343433"
                 type="tel"

@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import DeviceDetector from "@/components/device-detector";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Collection ledger",
@@ -27,6 +28,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <NextIntlClientProvider>{children}</NextIntlClientProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
