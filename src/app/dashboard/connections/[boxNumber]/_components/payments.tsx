@@ -1,0 +1,70 @@
+"use client";
+
+import { CreditCard } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import type { Payment } from "./types";
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const PaymentCard = ({ payment }: { payment: Payment }) => (
+  <Card className="hover:shadow-md transition-shadow">
+    <CardHeader>
+      <CardTitle className="text-md">{payment.currentPack.name}</CardTitle>
+      <CardDescription>
+        {formatDate(payment.date)}
+        {payment.migration && <Badge className="ml-4 text-xs">Migration</Badge>}
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="flex justify-between text-sm mb-2 font-semibold">
+        <span>LCO: ₹{payment.lcoPrice}</span>
+        <span>MRP: ₹{payment.customerPrice}</span>
+      </div>
+
+      {payment.migration && payment.to && (
+        <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-md">
+          <p className="text-xs text-blue-700 dark:text-blue-300">
+            Migrated to: <span className="font-medium">{payment.to.name}</span>
+          </p>
+        </div>
+      )}
+    </CardContent>
+  </Card>
+);
+
+export default function PaymentsHistory({ payments }: { payments: Payment[] }) {
+  const t = useTranslations("ConnectionPage");
+
+  return (
+    <Card className="flex-1">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-4">
+          <CreditCard size={20} /> Payments History
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {payments.length === 0 && (
+          <p className="text-center">{t("noPayments")}</p>
+        )}
+        {payments.map((payment) => (
+          <PaymentCard key={payment.id} payment={payment} />
+        ))}
+      </CardContent>
+    </Card>
+  );
+}

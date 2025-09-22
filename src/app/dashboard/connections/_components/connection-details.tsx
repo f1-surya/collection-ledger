@@ -6,7 +6,9 @@ import {
   LoaderCircle,
   MapPin,
   Phone,
+  User,
 } from "lucide-react";
+import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -72,7 +74,9 @@ export function ConnectionDetails({
 
     if (!res.ok) {
       const error = await res.json();
-      toast.error(error.message);
+      console.error(error);
+      toast.error("Something went wrong");
+      return;
     }
 
     callback(connection.id);
@@ -85,14 +89,23 @@ export function ConnectionDetails({
       onOpenChange={() => onOpenChange(undefined)}
     >
       <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-xl">{connection.name}</DialogTitle>
-          <DialogDescription
-            className="cursor-pointer hover:text-foreground transition-colors"
-            onClick={() => navigator.clipboard.writeText(connection.boxNumber)}
-          >
-            SMC #{connection.boxNumber}
-          </DialogDescription>
+        <DialogHeader className="flex flex-row justify-between">
+          <div className="text-start">
+            <DialogTitle className="text-xl">{connection.name}</DialogTitle>
+            <DialogDescription
+              className="cursor-pointer hover:text-foreground transition-colors"
+              onClick={() =>
+                navigator.clipboard.writeText(connection.boxNumber)
+              }
+            >
+              SMC #{connection.boxNumber}
+            </DialogDescription>
+          </div>
+          <Link href={`/dashboard/connections/${connection.boxNumber}`}>
+            <Button size="icon" className="mr-4">
+              <User />
+            </Button>
+          </Link>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -161,7 +174,7 @@ export function ConnectionDetails({
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Close</Button>
+            <Button variant="secondary">Close</Button>
           </DialogClose>
           <Button
             onClick={markAsPaid}

@@ -43,5 +43,8 @@
     "deleteFailDescription": "Something went wrong while deleting the pack. Please try again later.",
     "editTitle": "Rename pack",
     "editFailTitle": "Unable to rename pack"
+  },
+  "ConnectionPage": {
+    "noPayments": "This connection doesn't have any recorded payments."
   }
 }
