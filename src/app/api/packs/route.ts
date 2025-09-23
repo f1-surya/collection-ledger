@@ -1,24 +1,16 @@
 import { NextResponse } from "next/server";
-import handleSession from "@/lib/handle-session";
+import type { BasePack } from "@/app/dashboard/base-packs/_components/types";
+import { authedFetch } from "@/lib/authed-fetch";
 
 export async function GET() {
-  const accessToken = await handleSession();
+  const { data, error } = await authedFetch<BasePack>("/pack");
 
-  const res = await fetch(`${process.env.API_URL}/pack`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-  });
-  if (res.ok) {
-    const packs = await res.json();
-    return NextResponse.json(packs);
+  if (error) {
+    return NextResponse.json(
+      { message: error.message },
+      { status: error.status },
+    );
   }
 
-  const error = await res.json();
-  console.error(error);
-  return NextResponse.json(
-    { message: "Something went wrong" },
-    { status: 500 },
-  );
+  return NextResponse.json(data);
 }

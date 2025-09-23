@@ -24,10 +24,14 @@ const formatDate = (dateString: string) => {
 const PaymentCard = ({ payment }: { payment: Payment }) => (
   <Card className="hover:shadow-md transition-shadow">
     <CardHeader>
-      <CardTitle className="text-md">{payment.currentPack.name}</CardTitle>
+      <CardTitle className="text-md">
+        {payment.isMigration ? payment.to?.name : payment.currentPack.name}
+      </CardTitle>
       <CardDescription>
         {formatDate(payment.date)}
-        {payment.migration && <Badge className="ml-4 text-xs">Migration</Badge>}
+        {payment.isMigration && (
+          <Badge className="ml-4 text-xs">Migration</Badge>
+        )}
       </CardDescription>
     </CardHeader>
     <CardContent>
@@ -36,10 +40,11 @@ const PaymentCard = ({ payment }: { payment: Payment }) => (
         <span>MRP: ₹{payment.customerPrice}</span>
       </div>
 
-      {payment.migration && payment.to && (
+      {payment.isMigration && payment.to && (
         <div className="mt-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded-md">
           <p className="text-xs text-blue-700 dark:text-blue-300">
-            Migrated to: <span className="font-medium">{payment.to.name}</span>
+            Migrated from:{" "}
+            <span className="font-medium">{payment.currentPack.name}</span>
           </p>
         </div>
       )}
