@@ -1,10 +1,11 @@
-"use client";
-
-import { CreditCard } from "lucide-react";
+import { format, isThisMonth } from "date-fns";
+import { CreditCard, Trash } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -12,27 +13,35 @@ import {
 } from "@/components/ui/card";
 import type { Payment } from "./types";
 
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-};
-
-const PaymentCard = ({ payment }: { payment: Payment }) => (
+const PaymentCard = ({
+  payment,
+  deletePayment,
+}: {
+  payment: Payment;
+  deletePayment: (id: number) => Promise<void>;
+}) => (
   <Card className="hover:shadow-md transition-shadow">
     <CardHeader>
       <CardTitle className="text-md">
         {payment.isMigration ? payment.to?.name : payment.currentPack.name}
       </CardTitle>
       <CardDescription>
-        {formatDate(payment.date)}
+        {format(payment.date, "dd MMM yyyy")}
         {payment.isMigration && (
           <Badge className="ml-4 text-xs">Migration</Badge>
         )}
       </CardDescription>
+      {isThisMonth(payment.date) && (
+        <CardAction>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => deletePayment(payment.id)}
+          >
+            <Trash className="text-red-600" />
+          </Button>
+        </CardAction>
+      )}
     </CardHeader>
     <CardContent>
       <div className="flex justify-between text-sm mb-2 font-semibold">
@@ -52,7 +61,13 @@ const PaymentCard = ({ payment }: { payment: Payment }) => (
   </Card>
 );
 
-export default function PaymentsHistory({ payments }: { payments: Payment[] }) {
+export default function PaymentsHistory({
+  payments,
+  deletePayment,
+}: {
+  payments: Payment[];
+  deletePayment: (id: number) => Promise<void>;
+}) {
   const t = useTranslations("ConnectionPage");
 
   return (
@@ -67,7 +82,11 @@ export default function PaymentsHistory({ payments }: { payments: Payment[] }) {
           <p className="text-center">{t("noPayments")}</p>
         )}
         {payments.map((payment) => (
-          <PaymentCard key={payment.id} payment={payment} />
+          <PaymentCard
+            key={payment.id}
+            payment={payment}
+            deletePayment={deletePayment}
+          />
         ))}
       </CardContent>
     </Card>

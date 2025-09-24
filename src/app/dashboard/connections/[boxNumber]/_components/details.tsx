@@ -1,6 +1,6 @@
 "use client";
 
-import { isThisMonth } from "date-fns";
+import { format, isThisMonth } from "date-fns";
 import {
   AlertCircle,
   Calendar,
@@ -71,10 +71,9 @@ export function Details({
   const [selectedPack, setSelectedPack] = useState<BasePack | undefined>();
   const { data } = useSWR<BasePack[]>("/api/packs", fetcher);
 
-  const lastPayment = connection.lastPayment
-    ? new Date(connection.lastPayment)
-    : undefined;
-  const paidThisMonth = lastPayment ? isThisMonth(lastPayment) : false;
+  const paidThisMonth = connection.lastPayment
+    ? isThisMonth(connection.lastPayment)
+    : false;
 
   const handleCopyPhone = async () => {
     if (connection?.phoneNumber) {
@@ -82,15 +81,6 @@ export function Details({
       setCopiedPhone(true);
       setTimeout(() => setCopiedPhone(false), 2000);
     }
-  };
-
-  const formatLastPayment = () => {
-    if (!lastPayment) return "No payment recorded";
-    return lastPayment.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
   };
 
   const markAsPaid = async () => {
@@ -140,9 +130,7 @@ export function Details({
 
     if (res.ok) {
       const payment: Payment = await res.json();
-
-      console.log(payment);
-      if (lastPayment && isThisMonth(lastPayment)) {
+      if (paidThisMonth) {
         setPayments(payments.map((p) => (p.id === payment.id ? payment : p)));
       } else {
         setPayments([payment, ...payments]);
@@ -159,6 +147,38 @@ export function Details({
     }
 
     setMigrating(false);
+  };
+
+  const deletePayment = async (id: number) => {
+    const promise = fetch(`/api/payment?paymentId=${id}`, {
+      method: "DELETE",
+    });
+
+    toast.promise(promise, {
+      loading: "Deleting payment...",
+      success: "Payment deleted successfully.",
+      error: "Something went wrong while deleting the payment.",
+    });
+
+    if ((await promise).ok) {
+      const payment = payments.find((p) => p.id === id);
+      const updatedPayments = payments.filter((p) => p.id !== id);
+      setPayments(updatedPayments);
+      const lastPayment = updatedPayments[0];
+      if (lastPayment) {
+        setConnection({
+          ...connection,
+          basePack: lastPayment.to ?? lastPayment.currentPack,
+          lastPayment: lastPayment.date,
+        });
+      } else if (payment) {
+        setConnection({
+          ...connection,
+          basePack: payment.currentPack,
+          lastPayment: undefined,
+        });
+      }
+    }
   };
 
   return (
@@ -280,7 +300,11 @@ export function Details({
           <div className="flex items-center gap-2 text-sm">
             <Calendar size={16} className="text-muted-foreground" />
             <span className="text-muted-foreground">Last Payment:</span>
-            <span className="font-medium">{formatLastPayment()}</span>
+            <span className="font-medium">
+              {connection.lastPayment
+                ? format(connection.lastPayment, "dd MMM yyyy")
+                : "No payment recorded"}
+            </span>
           </div>
         </CardContent>
         <CardFooter className="flex-row-reverse">
@@ -296,7 +320,7 @@ export function Details({
           </Button>
         </CardFooter>
       </Card>
-      <PaymentsHistory payments={payments} />
+      <PaymentsHistory payments={payments} deletePayment={deletePayment} />
       <AlertDialog
         open={selectedPack !== undefined}
         onOpenChange={() => setSelectedPack(undefined)}

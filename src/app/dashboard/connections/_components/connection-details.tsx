@@ -1,4 +1,4 @@
-import { isThisMonth } from "date-fns";
+import { format, isThisMonth } from "date-fns";
 import {
   Calendar,
   Check,
@@ -41,10 +41,9 @@ export function ConnectionDetails({
 
   if (!connection) return;
 
-  const lastPayment = connection.lastPayment
-    ? new Date(connection.lastPayment)
-    : undefined;
-  const paidThisMonth = lastPayment ? isThisMonth(lastPayment) : false;
+  const paidThisMonth = connection.lastPayment
+    ? isThisMonth(connection.lastPayment)
+    : false;
 
   const handleCopyPhone = async () => {
     if (connection?.phoneNumber) {
@@ -52,15 +51,6 @@ export function ConnectionDetails({
       setCopiedPhone(true);
       setTimeout(() => setCopiedPhone(false), 2000);
     }
-  };
-
-  const formatLastPayment = () => {
-    if (!lastPayment) return "No payment recorded";
-    return lastPayment.toLocaleDateString("en-IN", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
   };
 
   const markAsPaid = async () => {
@@ -169,7 +159,11 @@ export function ConnectionDetails({
           <div className="flex items-center gap-2 text-sm">
             <Calendar size={16} className="text-muted-foreground" />
             <span className="text-muted-foreground">Last Payment:</span>
-            <span className="font-medium">{formatLastPayment()}</span>
+            <span className="font-medium">
+              {connection.lastPayment
+                ? format(connection.lastPayment, "dd MMM yyyy")
+                : "No payment recorded"}
+            </span>
           </div>
         </div>
         <DialogFooter>

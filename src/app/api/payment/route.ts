@@ -40,3 +40,26 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json(data, { status: 200 });
 }
+
+export async function DELETE(req: NextRequest) {
+  const paymentId = req.nextUrl.searchParams.get("paymentId");
+  if (!paymentId) {
+    return NextResponse.json(
+      { message: "Please provide payment id" },
+      { status: 400 },
+    );
+  }
+
+  const { error } = await authedFetch(
+    `/payment?paymentId=${paymentId}`,
+    {
+      method: "DELETE",
+    },
+    true,
+  );
+  if (error) {
+    return NextResponse.json({ message: error }, { status: 500 });
+  }
+
+  return NextResponse.json({}, { status: 200 });
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 
 export type Connection = {
   id: number;
@@ -50,11 +51,7 @@ export const columns: ColumnDef<Connection>[] = [
       const lastPayment = row.getValue("lastPayment");
       if (!lastPayment) return "Nil";
 
-      return new Date(lastPayment as string).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      });
+      return format(lastPayment as string, "dd MMM yyyy");
     },
   },
 ];
