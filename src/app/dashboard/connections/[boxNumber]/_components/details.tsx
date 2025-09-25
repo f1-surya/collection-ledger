@@ -15,6 +15,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
+import type { Area } from "@/app/dashboard/areas/_components/areas";
 import type { BasePack } from "@/app/dashboard/base-packs/_components/types";
 import {
   AlertDialog,
@@ -54,6 +55,8 @@ import { fetcher } from "@/lib/fetcher";
 import type { Connection } from "../../_components/columns";
 import PaymentsHistory from "./payments";
 import type { Payment } from "./types";
+import type { ConnectionUpdateSchema } from "./update-connection";
+import UpdateConnection from "./update-connection";
 
 export function Details({
   currConnection,
@@ -68,6 +71,7 @@ export function Details({
   const [markingAsPaid, setMarkingAsPaid] = useState(false);
   const [basePackOpen, setBasePackOpen] = useState(false);
   const [migrating, setMigrating] = useState(false);
+  const [edit, setEdit] = useState(false);
   const [selectedPack, setSelectedPack] = useState<BasePack | undefined>();
   const { data } = useSWR<BasePack[]>("/api/packs", fetcher);
 
@@ -117,7 +121,6 @@ export function Details({
 
   const migrate = async () => {
     if (!selectedPack) return;
-
     setMigrating(true);
 
     const res = await fetch(
@@ -145,7 +148,6 @@ export function Details({
     } else {
       toast.error("Something went wrong while migrating.");
     }
-
     setMigrating(false);
   };
 
@@ -181,6 +183,17 @@ export function Details({
     }
   };
 
+  const handleUpdateConnection = (data: ConnectionUpdateSchema, area: Area) => {
+    setConnection({
+      ...connection,
+      name: data.name,
+      phoneNumber: data.phoneNumber,
+      boxNumber: data.boxNumber,
+      area,
+    });
+    setEdit(false);
+  };
+
   return (
     <main className="m-4 flex flex-col md:flex-row md:justify-between gap-4">
       <Card className="flex-1">
@@ -190,7 +203,7 @@ export function Details({
           </CardTitle>
           <CardDescription>SMC: #{connection.boxNumber}</CardDescription>
           <CardAction>
-            <Button>
+            <Button onClick={() => setEdit(true)}>
               <UserPen />
             </Button>
           </CardAction>
@@ -388,6 +401,12 @@ export function Details({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <UpdateConnection
+        open={edit}
+        onOpenChange={setEdit}
+        connection={connection}
+        callback={handleUpdateConnection}
+      />
     </main>
   );
 }

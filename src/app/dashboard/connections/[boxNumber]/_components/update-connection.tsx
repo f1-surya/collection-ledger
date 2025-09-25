@@ -1,9 +1,8 @@
-"use client";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import useSWR from "swr";
 import z from "zod";
+import type { Area } from "@/app/dashboard/areas/_components/areas";
 import { Button } from "@/components/ui/button";
 import { CustomFormField } from "@/components/ui/custom-field";
 import CustomSelect from "@/components/ui/custom-select";
@@ -19,13 +18,9 @@ import {
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { fetcher } from "@/lib/fetcher";
+import type { Connection } from "../../_components/columns";
 
-interface Props {
-  open: boolean;
-  onOpenChange: (state: boolean) => void;
-}
-
-const connectionSchema = z.object({
+const connectionUpdateSchema = z.object({
   name: z
     .string()
     .min(4, { message: "Name should contain at least 4 characterns" })
@@ -34,36 +29,53 @@ const connectionSchema = z.object({
   phoneNumber: z
     .string()
     .min(10, { message: "Not a valid phone number" })
-    .trim()
-    .optional(),
+    .trim(),
   boxNumber: z
     .string()
     .min(10, { message: "Smartcard should be at least 10 characters long" })
     .trim()
     .toUpperCase(),
   area: z.number({ message: "Required field" }),
-  basePack: z.number({ message: "Required field" }),
 });
 
-export default function CreateConnection({ open, onOpenChange }: Props) {
-  const form = useForm<z.infer<typeof connectionSchema>>({
-    resolver: zodResolver(connectionSchema),
+interface Props {
+  connection: Connection;
+  open: boolean;
+  onOpenChange: (state: boolean) => void;
+  callback: (data: z.infer<typeof connectionUpdateSchema>, area: Area) => void;
+}
+
+export type ConnectionUpdateSchema = z.infer<typeof connectionUpdateSchema>;
+
+export default function UpdateConnection({
+  connection,
+  open,
+  onOpenChange,
+  callback,
+}: Props) {
+  const form = useForm<z.infer<typeof connectionUpdateSchema>>({
+    resolver: zodResolver(connectionUpdateSchema),
+    defaultValues: {
+      ...connection,
+      area: connection.area.id,
+    },
   });
   const isMobile = useIsMobile();
-  const { data: areas } = useSWR("/api/area", fetcher);
-  const { data: basePacks } = useSWR("/api/packs", fetcher);
+  const { data: areas } = useSWR<Area[]>("/api/area", fetcher);
 
-  const save = async (data: z.infer<typeof connectionSchema>) => {
+  const save = async (data: z.infer<typeof connectionUpdateSchema>) => {
     const res = await fetch("/api/connection", {
-      method: "POST",
-      body: JSON.stringify(data),
+      method: "PUT",
+      body: JSON.stringify({ id: connection.id, ...data }),
       headers: {
         "Content-Type": "application/json",
       },
     });
 
     if (res.ok) {
-      window.location.reload();
+      const selectedArea = areas?.find((area) => area.id === data.area);
+      // @ts-expect-error
+      callback(data, selectedArea);
     } else if (res.status !== 500 && res.status !== 200) {
       const errors = (await res.json()) as { [key: string]: string };
       for (const field in errors) {
@@ -78,8 +90,8 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
       <SheetContent side={isMobile ? "bottom" : "right"}>
         <form onSubmit={form.handleSubmit(save)}>
           <SheetHeader>
-            <SheetTitle>Create connection</SheetTitle>
-            <SheetDescription>Enter connection details</SheetDescription>
+            <SheetTitle>Update connection</SheetTitle>
+            <SheetDescription>Modify connection details</SheetDescription>
           </SheetHeader>
           <Form {...form}>
             <div className="space-y-4 px-4">
@@ -109,15 +121,8 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
                 name="area"
                 label="Area"
                 placeHolder="Select an area"
+                // @ts-expect-error
                 items={areas}
-                required
-              />
-              <CustomSelect
-                control={form.control}
-                name="basePack"
-                label="Base pack"
-                placeHolder="Select a base pack"
-                items={basePacks}
                 required
               />
             </div>

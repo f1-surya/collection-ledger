@@ -1,26 +1,39 @@
 import { type NextRequest, NextResponse } from "next/server";
-import handleSession from "@/lib/handle-session";
+import { authedFetch } from "@/lib/authed-fetch";
 
 export async function POST(req: NextRequest) {
-  const accessToken = await handleSession();
   const body = await req.json();
 
-  const res = await fetch(`${process.env.API_URL}/connection`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearen ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const content = await res.json();
-    if (res.status === 500) {
-      console.error(content);
+  const { error } = await authedFetch(
+    "/connection",
+    { method: "POST", body: JSON.stringify(body) },
+    true,
+  );
+  if (error) {
+    if (error.status === 500) {
+      console.error(error);
     }
-    return NextResponse.json(content, { status: res.status });
+    return NextResponse.json(error.errorData, { status: error.status });
   }
 
   return NextResponse.json({ message: "Connection saved successfully." });
+}
+
+export async function PUT(req: NextRequest) {
+  const body = await req.json();
+
+  const { error } = await authedFetch(
+    "/connection",
+    { method: "PUT", body: JSON.stringify(body) },
+    true,
+  );
+  if (error) {
+    if (error.status === 500) {
+      console.error(error);
+    }
+    console.error(error);
+    return NextResponse.json(error.errorData, { status: error.status });
+  }
+
+  return NextResponse.json({ message: "Connection updated successfully." });
 }

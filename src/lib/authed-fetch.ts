@@ -8,7 +8,7 @@ type Success<T> = {
 
 type Failure<E> = {
   data: null;
-  error: { status: number; message: string; error?: E };
+  error: { status: number; message: string; error?: E; errorData: object };
 };
 
 type NoJson = {
@@ -55,6 +55,7 @@ export async function authedFetch<T, E = Error>(
           status: res.status,
           message:
             errorData.message || (`HTTP error! Status: ${res.status}` as E),
+          errorData,
         },
       };
     }
