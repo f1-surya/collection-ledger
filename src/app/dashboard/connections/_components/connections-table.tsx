@@ -2,7 +2,6 @@
 
 import {
   type ColumnDef,
-  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -38,16 +37,15 @@ export function ConnectionTable<TData, TValue>({
   const [currConnection, setCurrConnection] = useState<
     Connection | undefined
   >();
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [newConnection, setNewConnection] = useState(false);
+  const [globalFilter, setGlobalFilter] = useState("");
   const table = useReactTable({
     data: connections,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     state: {
-      columnFilters,
+      globalFilter,
     },
     initialState: {
       pagination: {
@@ -75,10 +73,8 @@ export function ConnectionTable<TData, TValue>({
         <Input
           placeholder="Filter by name"
           type="search"
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
+          value={globalFilter}
+          onChange={(event) => setGlobalFilter(String(event.target.value))}
           className="max-w-sm"
         />
         <Button
