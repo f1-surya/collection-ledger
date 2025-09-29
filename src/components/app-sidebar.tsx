@@ -45,7 +45,7 @@ const links = [
   {
     name: "paymentHistory",
     icon: History,
-    href: "/dashboard/history",
+    href: "/dashboard/payments-history",
   },
   {
     name: "packs",
