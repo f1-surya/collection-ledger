@@ -1,13 +1,19 @@
 "use client";
 
 import { format, startOfMonth } from "date-fns";
-import { ArrowRight, HardDriveUpload, Search } from "lucide-react";
+import { ArrowRight, Download, HardDriveUpload, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
@@ -71,33 +77,77 @@ export default function PaymentList({
     });
   };
 
+  const downloadPayments = async () => {
+    const params = new URLSearchParams({
+      start: startDate ?? startOfMonth(new Date()).toISOString(),
+      end: endDate ?? new Date().toISOString(),
+    });
+
+    const response = await fetch(`/api/payment/sheet?${params}`, {
+      headers: {
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to download payments");
+    }
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "payments.xlsx";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <main className="p-4">
-      <div className="flex gap-1 py-2">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="secondary">{formatDates()}</Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 m-4">
-            <Calendar
-              mode="range"
-              selected={{
-                from: startDate
-                  ? new Date(startDate)
-                  : startOfMonth(new Date()),
-                to: endDate ? new Date(endDate) : new Date(),
-              }}
-              onSelect={changeDates}
-              disabled={{ after: new Date() }}
-            />
-          </PopoverContent>
-        </Popover>
-        <Toggle
-          pressed={searchParams.get("migration") === "true"}
-          onPressedChange={(val) => updateSearchParams({ migration: val })}
-        >
-          <HardDriveUpload />
-        </Toggle>
+      <div className="flex items-center justify-between gap-1 py-2">
+        <div className="flex items-center gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="secondary" size="sm">
+                {formatDates()}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 m-4">
+              <Calendar
+                mode="range"
+                selected={{
+                  from: startDate
+                    ? new Date(startDate)
+                    : startOfMonth(new Date()),
+                  to: endDate ? new Date(endDate) : new Date(),
+                }}
+                onSelect={changeDates}
+                disabled={{ after: new Date() }}
+              />
+            </PopoverContent>
+          </Popover>
+          <Toggle
+            variant="outline"
+            size="sm"
+            pressed={searchParams.get("migration") === "true"}
+            onPressedChange={(val) => updateSearchParams({ migration: val })}
+          >
+            <HardDriveUpload />
+          </Toggle>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button size="sm">
+              <Download /> Download
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={downloadPayments}>
+              Download Payments
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="space-y-2">
         {filteredPayments.length === 0 ? (

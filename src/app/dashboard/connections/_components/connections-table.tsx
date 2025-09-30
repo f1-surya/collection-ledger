@@ -71,7 +71,7 @@ export function ConnectionTable<TData, TValue>({
     <div>
       <div className="flex items-center gap-4 w-full py-4">
         <Input
-          placeholder="Filter by name or SMC"
+          placeholder="Search by name or SMC"
           type="search"
           value={globalFilter}
           onChange={(event) => setGlobalFilter(String(event.target.value))}
