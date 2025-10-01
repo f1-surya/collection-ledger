@@ -41,11 +41,11 @@ export async function POST(request: Request) {
   });
 
   if (!res.ok) {
-    console.error(await res.text());
-    return NextResponse.json(
-      { error: "Failed to import data" },
-      { status: res.status },
-    );
+    const err = await res.json();
+    if (res.status !== 409) {
+      console.error(err);
+    }
+    return NextResponse.json(err, { status: res.status });
   }
 
   return NextResponse.json({ message: "Data imported successfully" });

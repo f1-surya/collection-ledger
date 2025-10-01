@@ -67,10 +67,13 @@ export default function SettingsPage() {
     toast.promise(prom, {
       loading: "Uploading data...",
       success: "Data uploaded successfully!",
-      error: "Failed to upload data",
     });
 
-    await prom;
+    const res = await prom;
+    if (!res.ok) {
+      const json = await res.json();
+      toast.error(json.message);
+    }
   };
 
   const onExport = async () => {

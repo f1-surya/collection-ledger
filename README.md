@@ -7,6 +7,6 @@ A web version of the collection ledger lite app.
 - [x] Edit connection.
 - [x] History page.
 - [x] Export paid connection list.
-- [ ] Data import and export.
+- [x] Data import and export.
 - [ ] Profile and Company page.
-- [ ] Settings page.
+- [x] Settings page.

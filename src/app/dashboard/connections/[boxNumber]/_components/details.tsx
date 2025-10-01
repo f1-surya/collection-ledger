@@ -196,7 +196,7 @@ export function Details({
 
   return (
     <main className="m-4 flex flex-col md:flex-row md:justify-between gap-4">
-      <Card className="flex-1">
+      <Card className="flex-1 h-fit">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {connection.name}
