@@ -46,5 +46,30 @@
   },
   "ConnectionPage": {
     "noPayments": "This connection doesn't have any recorded payments."
+  },
+  "Settings": {
+    "appearanceTitle": "Appearance",
+    "appearanceDescription": "Choose your preferred theme.",
+    "themeLabel": "Theme",
+    "themeHint": "System, Light, or Dark",
+    "selectTheme": "Select theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "languageTitle": "Language",
+    "languageDescription": "Select your preferred language.",
+    "languageLabel": "Interface language",
+    "languageHint": "English or Tamil",
+    "selectLanguage": "Select language",
+    "english": "English",
+    "tamil": "Tamil",
+    "dataTitle": "Data",
+    "dataDescription": "Import from or export to a spreadsheet (XLSX).",
+    "importLabel": "Import data from sheet",
+    "importHint": "Upload a .xlsx exported from your spreadsheet.",
+    "importButton": "Import .xlsx",
+    "exportLabel": "Export data to sheet",
+    "exportHint": "Export all rows to an .xlsx via your external API.",
+    "exportButton": "Export .xlsx"
   }
 }
