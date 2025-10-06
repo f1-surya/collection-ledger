@@ -88,3 +88,55 @@ export async function saveCompany(
 
   return { ...data, error: "Something went wrong, please try again." };
 }
+
+export async function updateCompany(
+  _pref: CompanyFormState,
+  formData: FormData,
+): Promise<CompanyFormState> {
+  const cookieJar = await cookies();
+  const data = {
+    name: formData.get("companyName")?.toString(),
+    email: formData.get("companyEmail")?.toString(),
+    phone: formData.get("phone")?.toString(),
+    address: formData.get("address")?.toString(),
+  };
+
+  const validation = companySchema.safeParse(data);
+  if (!validation.success) {
+    const errors = z.flattenError(validation.error).fieldErrors;
+    return {
+      errors: {
+        name: (errors.name ?? [])[0],
+        email: (errors.email ?? [])[0],
+        phone: (errors.phone ?? [])[0],
+        address: (errors.address ?? [])[0],
+      },
+      ...data,
+    };
+  }
+
+  const res = await fetch(`${process.env.API_URL}/company`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${cookieJar.get("access_token")?.value}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(validation.data),
+  });
+
+  if (!res.ok) {
+    const resData = await res.json();
+    return {
+      errors: {
+        name: resData.name,
+        email: resData.email,
+        phone: resData.phone,
+        address: resData.address,
+      },
+      error: resData.message,
+      ...data,
+    };
+  }
+
+  return { ...data };
+}

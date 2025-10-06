@@ -13,6 +13,7 @@
     "paymentHistory": "Payment history",
     "packs": "Base packs",
     "areas": "Areas",
+    "profile": "Profile",
     "settings": "Settings"
   },
   "Connections": {
@@ -71,5 +72,13 @@
     "exportLabel": "Export data to sheet",
     "exportHint": "Export all rows to an .xlsx via your external API.",
     "exportButton": "Export .xlsx"
+  },
+  "Profile": {
+    "title": "Edit Profile",
+    "description": "Update your account and company information.",
+    "userTitle": "User Profile",
+    "userDescription": "Edit your profile information.",
+    "companyTitle": "Company info",
+    "companyDescription": "Edit your compnay's information"
   }
 }

@@ -65,24 +65,40 @@ const links = [
 ];
 
 export function AppSidebar() {
-  const { isLoading, data } = useSwr("/api/company", fetcher);
+  const { isLoading: companyLoading, data: companyData } = useSwr(
+    "/api/company",
+    fetcher,
+  );
+  const { isLoading: userLoading, data: userData } = useSwr(
+    "/api/user",
+    fetcher,
+  );
   const t = useTranslations("Appbar");
   const pathname = usePathname();
   const { toggleSidebar } = useSidebar();
 
+  const isLoading = companyLoading || userLoading;
+
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="bg-card hover:bg-accent cursor-pointer transition-colors h-14 w-full rounded flex flex-row px-3 items-center justify-between">
-          {isLoading ? (
-            <Skeleton className="h-7 w-32 bg-primary/40" />
-          ) : (
-            <>
-              <h2 className="text-lg font-bold">{data.name}</h2>
-              <ChevronRight />
-            </>
-          )}
-        </div>
+        <Link href="/dashboard/profile" onClick={toggleSidebar}>
+          <div className="bg-card hover:bg-accent cursor-pointer transition-colors h-14 w-full rounded flex flex-row px-3 items-center justify-between">
+            {isLoading ? (
+              <Skeleton className="h-7 w-32 bg-primary/40" />
+            ) : (
+              <>
+                <div className="flex flex-col">
+                  <h2 className="text-lg font-bold">{companyData.name}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {userData.email}
+                  </p>
+                </div>
+                <ChevronRight />
+              </>
+            )}
+          </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
