@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { CreateCompanyForm } from "@/components/forms/company";
@@ -9,24 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { auth } from "@/lib/auth";
 
 export default async function CreateCompany() {
-  const [cookieJar, t] = await Promise.all([
-    cookies(),
-    getTranslations("CreateCompany"),
-  ]);
+  const t = await getTranslations("CreateCompany");
 
-  const res = await fetch(`${process.env.API_URL}/company`, {
-    headers: {
-      Authorization: `bearer ${cookieJar.get("access_token")?.value}`,
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (res.ok) {
+  const org = await auth.api.getFullOrganization({ headers: await headers() });
+  if (org) {
     redirect("/dashboard");
-  } else if (res.status !== 404) {
-    redirect("/error");
   }
 
   return (

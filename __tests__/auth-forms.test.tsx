@@ -2,29 +2,30 @@ import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginForm, SignupForm } from "@/components/forms/auth-forms";
 
-const mockUseActionState = vi.hoisted(() => vi.fn());
+const mockSignIn = vi.hoisted(() => vi.fn(() => Promise.resolve({})));
+const mockSignUp = vi.hoisted(() => vi.fn(() => Promise.resolve({})));
+const mockToastError = vi.hoisted(() => vi.fn());
+const mockPush = vi.hoisted(() => vi.fn());
 
-vi.mock("react", async (original) => {
-  const actual = await original<typeof import("react")>();
-  return {
-    ...actual,
-    useActionState: mockUseActionState,
-  };
-});
-
-vi.mock("@/lib/actions/auth", () => ({
-  login: vi.fn(),
-  signup: vi.fn(),
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    signIn: { email: mockSignIn },
+    signUp: { email: mockSignUp },
+  },
 }));
 
-describe("LoginForm", () => {
-  const mockFormAction = vi.fn(() => Promise.resolve({}));
+vi.mock("next/navigation", () => ({
+  useRouter: vi.fn(() => ({ push: mockPush })),
+}));
 
+vi.mock("sonner", () => ({ toast: { error: mockToastError } }));
+
+describe("LoginForm", () => {
   afterEach(cleanup);
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseActionState.mockReturnValue([{}, mockFormAction, false]);
+    mockSignIn.mockReturnValue(Promise.resolve({}));
   });
 
   it("should render the form with everything", () => {
@@ -32,147 +33,144 @@ describe("LoginForm", () => {
 
     expect(screen.getByPlaceholderText("rick@dalton.com")).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText("MyStrong#Password23"),
+      screen.getByPlaceholderText("Strong#Password12"),
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
   });
 
-  it("should render with errors and default values", async () => {
-    const emailError = "No user is associated with this email.";
-    const passwordError = "Password doesn't match";
-    const error = "Something went wrong, please try again later.";
-
-    mockUseActionState.mockReturnValue([
-      {
-        email: "example@mail.com",
-        password: "password",
-        emailError,
-        passwordError,
-        error,
-      },
-      mockFormAction,
-      false,
-    ]);
-
-    const screen = render(<LoginForm />);
-
-    expect(screen.getByLabelText("Email:")).toHaveValue("example@mail.com");
-    expect(screen.getByLabelText("Password:")).toHaveValue("password");
-    expect(screen.getByText(emailError)).toBeInTheDocument();
-    expect(screen.getByText(passwordError)).toBeInTheDocument();
-    expect(screen.getByText(error)).toBeInTheDocument();
-  });
-
-  it("should have disabled fields and button", () => {
-    mockUseActionState.mockReturnValue([{}, mockFormAction, true]);
-
-    const screen = render(<LoginForm />);
-
-    expect(screen.getByLabelText("Email:")).toBeDisabled();
-    expect(screen.getByLabelText("Password:")).toBeDisabled();
-    expect(screen.getByRole("button")).toBeDisabled();
-  });
-
   it("should call the form action", () => {
-    mockUseActionState.mockReturnValue([
-      {
-        email: "example@mail.com",
-        password: "password",
-      },
-      mockFormAction,
-      false,
-    ]);
+    const screen = render(<LoginForm />);
+
+    const email = screen.getByLabelText("Email:");
+    fireEvent.change(email, { target: { value: "some@mail.com" } });
+
+    const password = screen.getByLabelText("Password:");
+    fireEvent.change(password, { target: { value: "Password1!" } });
+
+    fireEvent.click(screen.getByRole("button"));
+    expect(mockSignIn).toBeCalled();
+  });
+
+  it("should call the toaster with error message", async () => {
+    mockSignIn.mockReturnValue(
+      Promise.resolve({ error: { message: "Wrong password" } }),
+    );
 
     const screen = render(<LoginForm />);
+
+    const email = screen.getByLabelText("Email:");
+    fireEvent.change(email, { target: { value: "some@mail.com" } });
+
+    const password = screen.getByLabelText("Password:");
+    fireEvent.change(password, { target: { value: "Password1!" } });
+
     fireEvent.click(screen.getByRole("button"));
-    expect(mockFormAction).toBeCalled();
+
+    await vi.waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith("Wrong password");
+    });
   });
 });
 
 describe("SignupForm", () => {
-  const mockFormAction = vi.fn(() => Promise.resolve({}));
-
   afterEach(cleanup);
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseActionState.mockReturnValue([{}, mockFormAction, false]);
+    mockSignUp.mockResolvedValue({});
   });
 
-  it("should have all the fields", () => {
+  it("should render all fields properly", () => {
     const screen = render(<SignupForm />);
 
-    expect(screen.getByLabelText("Name:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Email:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password:")).toBeInTheDocument();
-    expect(screen.getByLabelText("Enter password again:")).toBeInTheDocument();
-    expect(screen.getByRole("button")).toHaveTextContent("Signup");
+    expect(screen.getByLabelText("Name*:")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email*:")).toBeInTheDocument();
+    expect(screen.getByLabelText("Password*:")).toBeInTheDocument();
+    expect(screen.getByLabelText("Enter password again*:")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /signup/i })).toBeInTheDocument();
   });
 
-  it("should render with values and errors", () => {
-    mockUseActionState.mockReturnValue([
-      {
-        name: "Thomas",
-        email: "tommy@peakyblinders.com",
-        password: "password",
-        passwordRepeat: "pasword",
-        errors: {
-          name: "Last name",
-          email: "Old user",
-          password: "Weak",
-          passwordRepeat: "Not matching",
-        },
-        errorMessage: "Error",
-      },
-      mockFormAction,
-      false,
-    ]);
-
+  it("should render all errors properly by typing bad data", async () => {
     const screen = render(<SignupForm />);
 
-    expect(screen.getByLabelText("Name:")).toHaveValue("Thomas");
-    expect(screen.getByLabelText("Email:")).toHaveValue(
-      "tommy@peakyblinders.com",
-    );
-    expect(screen.getByLabelText("Password:")).toHaveValue("password");
-    expect(screen.getByLabelText("Enter password again:")).toHaveValue(
-      "pasword",
-    );
+    const nameInput = screen.getByLabelText("Name*:");
+    const emailInput = screen.getByLabelText("Email*:");
+    const passwordInput = screen.getByLabelText("Password*:");
+    const passwordRepeatInput = screen.getByLabelText("Enter password again*:");
 
-    expect(screen.getByText("Last name")).toBeInTheDocument();
-    expect(screen.getByText("Old user")).toBeInTheDocument();
-    expect(screen.getByText("Weak")).toBeInTheDocument();
-    expect(screen.getByText("Not matching")).toBeInTheDocument();
-    expect(screen.getByText("Error")).toBeInTheDocument();
+    fireEvent.change(nameInput, { target: { value: "A" } });
+    fireEvent.change(emailInput, { target: { value: "invalid-email" } });
+    fireEvent.change(passwordInput, {
+      target: { value: "Strong@Password123" },
+    });
+    fireEvent.change(passwordRepeatInput, {
+      target: { value: "Different@Password123" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /signup/i }));
+
+    await vi.waitFor(() => {
+      expect(
+        screen.getByText("Name must be at least 3 characters long"),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Invalid email address")).toBeInTheDocument();
+      expect(screen.getByText("Passwords do not match.")).toBeInTheDocument();
+    });
   });
 
-  it("should have disabled fields and button", () => {
-    mockUseActionState.mockReturnValue([{}, mockFormAction, true]);
-
+  it("should call auth.signUp.email and router.push on successful signup", async () => {
     const screen = render(<SignupForm />);
 
-    expect(screen.getByLabelText("Name:")).toBeDisabled();
-    expect(screen.getByLabelText("Email:")).toBeDisabled();
-    expect(screen.getByLabelText("Password:")).toBeDisabled();
-    expect(screen.getByLabelText("Enter password again:")).toBeDisabled();
-    expect(screen.getByRole("button")).toBeDisabled();
+    const nameInput = screen.getByLabelText("Name*:");
+    const emailInput = screen.getByLabelText("Email*:");
+    const passwordInput = screen.getByLabelText("Password*:");
+    const passwordRepeatInput = screen.getByLabelText("Enter password again*:");
+
+    fireEvent.change(nameInput, { target: { value: "John Doe" } });
+    fireEvent.change(emailInput, { target: { value: "john@example.com" } });
+    fireEvent.change(passwordInput, {
+      target: { value: "Strong@Password123" },
+    });
+    fireEvent.change(passwordRepeatInput, {
+      target: { value: "Strong@Password123" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /signup/i }));
+
+    await vi.waitFor(() => {
+      expect(mockSignUp).toHaveBeenCalledWith({
+        name: "John Doe",
+        email: "john@example.com",
+        password: "Strong@Password123",
+        passwordRepeat: "Strong@Password123",
+      });
+      expect(mockPush).toHaveBeenCalledWith("/create-company");
+    });
   });
 
-  it("should call form action", () => {
-    mockUseActionState.mockReturnValue([
-      {
-        name: "Thomas",
-        email: "tommy@peakyblinders.com",
-        password: "password",
-        passwordRepeat: "password",
-      },
-      mockFormAction,
-      false,
-    ]);
+  it("should pass errors from auth.signUp.email to toast.error", async () => {
+    mockSignUp.mockResolvedValue({ error: { message: "User already exists" } });
 
     const screen = render(<SignupForm />);
 
-    fireEvent.click(screen.getByRole("button"));
-    expect(mockFormAction).toBeCalled();
+    const nameInput = screen.getByLabelText("Name*:");
+    const emailInput = screen.getByLabelText("Email*:");
+    const passwordInput = screen.getByLabelText("Password*:");
+    const passwordRepeatInput = screen.getByLabelText("Enter password again*:");
+
+    fireEvent.change(nameInput, { target: { value: "John Doe" } });
+    fireEvent.change(emailInput, { target: { value: "john@example.com" } });
+    fireEvent.change(passwordInput, {
+      target: { value: "Strong@Password123" },
+    });
+    fireEvent.change(passwordRepeatInput, {
+      target: { value: "Strong@Password123" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: /signup/i }));
+
+    await vi.waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith("User already exists");
+    });
   });
 });
