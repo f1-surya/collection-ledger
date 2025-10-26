@@ -1,153 +1,145 @@
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { UserForm } from "@/app/dashboard/profile/_components/user-form";
 import { CompanyForm } from "@/components/forms/company";
 
-const mockUseActionState = vi.hoisted(() => vi.fn());
+const mockUpdateUser = vi.hoisted(() => vi.fn(() => Promise.resolve({})));
+const mockUpdateOrganization = vi.hoisted(() =>
+  vi.fn(() => Promise.resolve({})),
+);
+const mockToastError = vi.hoisted(() => vi.fn());
 
-vi.mock("react", async (original) => {
-  const actual = await original<typeof import("react")>();
-  return {
-    ...actual,
-    useActionState: mockUseActionState,
-  };
-});
-
-vi.mock("@/lib/actions/user", () => ({
-  updateUser: vi.fn(),
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    updateUser: mockUpdateUser,
+    organization: {
+      update: mockUpdateOrganization,
+    },
+  },
 }));
 
-vi.mock("@/lib/actions/company", () => ({
-  updateCompany: vi.fn(),
-}));
+vi.mock("sonner", () => ({ toast: { error: mockToastError } }));
 
 describe("UserForm", () => {
-  const mockFormAction = vi.fn(() => Promise.resolve({}));
-
   afterEach(cleanup);
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseActionState.mockReturnValue([{}, mockFormAction, false]);
   });
 
   it("should render the form with fields and default values", () => {
-    const defaultValues = { name: "John Doe", email: "john@example.com" };
-    const screen = render(<UserForm defaultValues={defaultValues} />);
+    const screen = render(<UserForm name="John Doe" />);
 
     expect(screen.getByLabelText("Full name:")).toHaveValue("John Doe");
-    expect(screen.getByLabelText("Email address:")).toHaveValue(
-      "john@example.com",
-    );
     expect(screen.getByRole("button", { name: /update/i })).toBeInTheDocument();
   });
 
-  it("should render with errors and state values", () => {
-    const nameError = "Name should have at least 2 characters.";
-    const emailError = "Invalid email";
-
-    mockUseActionState.mockReturnValue([
-      {
-        name: "J",
-        email: "invalid",
-        errors: {
-          name: nameError,
-          email: emailError,
-        },
-      },
-      mockFormAction,
-      false,
-    ]);
-
+  it("should call updateUser on form submit", () => {
     const screen = render(<UserForm />);
 
-    expect(screen.getByLabelText("Full name:")).toHaveValue("J");
-    expect(screen.getByLabelText("Email address:")).toHaveValue("invalid");
-    expect(screen.getByText(nameError)).toBeInTheDocument();
-    expect(screen.getByText(emailError)).toBeInTheDocument();
+    const nameInput = screen.getByLabelText("Full name:");
+    fireEvent.change(nameInput, { target: { value: "Jane Doe" } });
+
+    fireEvent.click(screen.getByRole("button"));
+
+    expect(mockUpdateUser).toHaveBeenCalledWith({
+      name: "Jane Doe",
+    });
   });
 
-  it("should have disabled button when pending", () => {
-    mockUseActionState.mockReturnValue([{}, mockFormAction, true]);
+  it("should show error toast on update failure", async () => {
+    mockUpdateUser.mockResolvedValue({ error: { message: "Update failed" } });
 
     const screen = render(<UserForm />);
 
-    expect(screen.getByRole("button")).toBeDisabled();
+    const nameInput = screen.getByLabelText("Full name:");
+    fireEvent.change(nameInput, { target: { value: "Jane Doe" } });
+
+    fireEvent.click(screen.getByRole("button"));
+
+    await vi.waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith("Update failed");
+    });
   });
 });
 
 describe("CompanyForm", () => {
-  const mockFormAction = vi.fn(() => Promise.resolve({}));
-
   afterEach(cleanup);
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUseActionState.mockReturnValue([{}, mockFormAction, false]);
   });
 
   it("should render the form with fields and default values", () => {
     const defaultValues = {
       name: "Dalton Ltd.",
-      email: "contact@dalton.com",
-      phone: "+1234567890",
+      slug: "contact@dalton.com",
+      phoneNumber: "+1234567890",
       address: "123 Main St",
     };
     const screen = render(<CompanyForm defaultValues={defaultValues} />);
 
-    expect(screen.getByLabelText("Company name:")).toHaveValue("Dalton Ltd.");
-    expect(screen.getByLabelText("Company email:")).toHaveValue(
+    expect(screen.getByLabelText("Company name*:")).toHaveValue("Dalton Ltd.");
+    expect(screen.getByLabelText("Company email*:")).toHaveValue(
       "contact@dalton.com",
     );
-    expect(screen.getByLabelText("Company phone number:")).toHaveValue(
+    expect(screen.getByLabelText("Company phone number*:")).toHaveValue(
       "+1234567890",
     );
-    expect(screen.getByLabelText("Company address:")).toHaveValue(
+    expect(screen.getByLabelText("Company address*:")).toHaveValue(
       "123 Main St",
     );
     expect(screen.getByRole("button", { name: /update/i })).toBeInTheDocument();
   });
 
-  it("should render with errors and state values", () => {
-    const nameError = "Company name should have at least 5 characters.";
-    const emailError = "Invalid email";
-    const phoneError = "Phone number should contain at least 10 digits.";
-    const addressError = "Address should have at least 10 characters.";
-
-    mockUseActionState.mockReturnValue([
-      {
-        name: "ABC",
-        email: "invalid",
-        phone: "123",
-        address: "Short",
-        errors: {
-          name: nameError,
-          email: emailError,
-          phone: phoneError,
-          address: addressError,
-        },
-      },
-      mockFormAction,
-      false,
-    ]);
-
+  it("should call organization.update on successful submit", async () => {
     const screen = render(<CompanyForm />);
 
-    expect(screen.getByLabelText("Company name:")).toHaveValue("ABC");
-    expect(screen.getByLabelText("Company email:")).toHaveValue("invalid");
-    expect(screen.getByLabelText("Company phone number:")).toHaveValue("123");
-    expect(screen.getByLabelText("Company address:")).toHaveValue("Short");
-    expect(screen.getByText(nameError)).toBeInTheDocument();
-    expect(screen.getByText(emailError)).toBeInTheDocument();
-    expect(screen.getByText(phoneError)).toBeInTheDocument();
-    expect(screen.getByText(addressError)).toBeInTheDocument();
+    const nameInput = screen.getByLabelText("Company name*:");
+    const emailInput = screen.getByLabelText("Company email*:");
+    const phoneInput = screen.getByLabelText("Company phone number*:");
+    const addressInput = screen.getByLabelText("Company address*:");
+
+    fireEvent.change(nameInput, { target: { value: "Dalton Ltd." } });
+    fireEvent.change(emailInput, { target: { value: "contact@dalton.com" } });
+    fireEvent.change(phoneInput, { target: { value: "+1234567890" } });
+    fireEvent.change(addressInput, { target: { value: "123 Main St" } });
+
+    fireEvent.click(screen.getByRole("button", { name: /update/i }));
+
+    await vi.waitFor(() => {
+      expect(mockUpdateOrganization).toHaveBeenCalledWith({
+        data: {
+          name: "Dalton Ltd.",
+          slug: "contact@dalton.com",
+          phoneNumber: "+1234567890",
+          address: "123 Main St",
+        },
+      });
+    });
   });
 
-  it("should have disabled button when pending", () => {
-    mockUseActionState.mockReturnValue([{}, mockFormAction, true]);
+  it("should show error toast on update failure", async () => {
+    mockUpdateOrganization.mockResolvedValue({
+      error: { message: "Update failed" },
+    });
 
     const screen = render(<CompanyForm />);
 
-    expect(screen.getByRole("button")).toBeDisabled();
+    const nameInput = screen.getByLabelText("Company name*:");
+    const emailInput = screen.getByLabelText("Company email*:");
+    const phoneInput = screen.getByLabelText("Company phone number*:");
+    const addressInput = screen.getByLabelText("Company address*:");
+
+    fireEvent.change(nameInput, { target: { value: "Dalton Ltd." } });
+    fireEvent.change(emailInput, { target: { value: "contact@dalton.com" } });
+    fireEvent.change(phoneInput, { target: { value: "+1234567890" } });
+    fireEvent.change(addressInput, { target: { value: "123 Main St" } });
+
+    fireEvent.click(screen.getByRole("button", { name: /update/i }));
+
+    await vi.waitFor(() => {
+      expect(mockToastError).toHaveBeenCalledWith("Update failed");
+    });
   });
 });

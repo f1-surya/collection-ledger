@@ -1,26 +1,30 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoaderCircle } from "lucide-react";
+import { AlertCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import z from "zod";
 import { authClient } from "@/lib/auth-client";
+import { Alert, AlertTitle } from "../ui/alert";
 import { Button } from "../ui/button";
 import { CustomFormField } from "../ui/custom-field";
 import { Field, FieldLabel } from "../ui/field";
 import { Form } from "../ui/form";
 import { Input } from "../ui/input";
+import { Spinner } from "../ui/spinner";
 
 export function LoginForm() {
   const [pending, setPending] = useState(false);
+  const [alert, setAlert] = useState<string | undefined>();
   const router = useRouter();
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setPending(true);
+    setAlert(undefined);
+
     const formData = new FormData(e.currentTarget);
     const { error } = await authClient.signIn.email({
       email: formData.get("email")!.toString(),
@@ -28,7 +32,7 @@ export function LoginForm() {
     });
 
     if (error) {
-      toast.error(error.message);
+      setAlert(error.message);
       setPending(false);
     } else {
       router.push("/dashboard");
@@ -39,7 +43,7 @@ export function LoginForm() {
     <form onSubmit={onSubmit} className="space-y-4 text-start">
       <Field>
         <FieldLabel htmlFor="email">Email:</FieldLabel>
-        <Input id="email" name="email" placeholder="rick@dalton.com" />
+        <Input id="email" name="email" placeholder="rick@dalton.com" type='email' required />
       </Field>
       <Field>
         <FieldLabel htmlFor="password">Password:</FieldLabel>
@@ -48,10 +52,17 @@ export function LoginForm() {
           name="password"
           type="password"
           placeholder="Strong#Password12"
+          required
         />
       </Field>
+      {alert && (
+        <Alert variant="destructive">
+          <AlertCircleIcon />
+          <AlertTitle>{alert}</AlertTitle>
+        </Alert>
+      )}
       <Button className="w-full" type="submit" disabled={pending}>
-        {pending ? <LoaderCircle className="animate-spin" /> : "Login"}
+        {pending ? <Spinner /> : "Login"}
       </Button>
     </form>
   );
@@ -84,6 +95,7 @@ const signupSchema = z
 
 export function SignupForm() {
   const [pending, setPending] = useState(false);
+  const [alert, setAlert] = useState<string | undefined>();
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
   });
@@ -91,11 +103,12 @@ export function SignupForm() {
 
   const signup = async (data: z.infer<typeof signupSchema>) => {
     setPending(true);
+    setAlert(undefined);
     const { error } = await authClient.signUp.email({
       ...data,
     });
     if (error) {
-      toast.error(error.message);
+      setAlert(error.message);
     } else {
       router.push("/create-company");
     }
@@ -138,8 +151,14 @@ export function SignupForm() {
           />
         </div>
       </Form>
+      {alert && (
+        <Alert variant="destructive">
+          <AlertCircleIcon />
+          <AlertTitle>{alert}</AlertTitle>
+        </Alert>
+      )}
       <Button className="w-full" type="submit" disabled={pending}>
-        {pending ? <LoaderCircle className="animate-spin" /> : "Signup"}
+        {pending ? <Spinner /> : "Signup"}
       </Button>
     </form>
   );

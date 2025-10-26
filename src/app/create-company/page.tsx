@@ -1,4 +1,3 @@
-import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { CreateCompanyForm } from "@/components/forms/company";
@@ -9,12 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { auth } from "@/lib/auth";
+import { getOrg } from "@/lib/get-org";
 
 export default async function CreateCompany() {
   const t = await getTranslations("CreateCompany");
 
-  const org = await auth.api.getFullOrganization({ headers: await headers() });
+  const org = await getOrg();
   if (org) {
     redirect("/dashboard");
   }

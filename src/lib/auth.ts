@@ -10,5 +10,29 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
-  plugins: [organization()],
+  session: {
+    cookieCache: {
+      maxAge: 60 * 5,
+    },
+  },
+  plugins: [
+    organization({
+      schema: {
+        organization: {
+          additionalFields: {
+            phoneNumber: {
+              type: "string",
+              input: true,
+              required: true,
+            },
+            address: {
+              type: "string",
+              input: true,
+              required: true,
+            },
+          },
+        },
+      },
+    }),
+  ],
 });
