@@ -35,7 +35,7 @@ const connectionUpdateSchema = z.object({
     .min(10, { message: "Smartcard should be at least 10 characters long" })
     .trim()
     .toUpperCase(),
-  area: z.number({ message: "Required field" }),
+  area: z.nanoid({ message: "Required field" }),
 });
 
 interface Props {

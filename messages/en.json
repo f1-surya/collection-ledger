@@ -30,7 +30,8 @@
     "deleteFailTitle": "Unable to delete area",
     "deleteFailDescription": "Something went wrong while deleting the area. Please try again later.",
     "editTitle": "Rename area",
-    "editFailTitle": "Unable to rename area"
+    "editFailTitle": "Unable to rename area",
+    "emptyTitle": "You have no saved areas yet"
   },
   "BasePack": {
     "list": "Here is a list of all your pack",
