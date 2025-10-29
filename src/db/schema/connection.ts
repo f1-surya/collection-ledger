@@ -1,4 +1,4 @@
-import { index, pgTable, text } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, text } from "drizzle-orm/pg-core";
 import { organization } from "./auth";
 
 export const areas = pgTable(
@@ -10,5 +10,19 @@ export const areas = pgTable(
       .notNull()
       .references(() => organization.id),
   },
-  (table) => [index("org_index").on(table.org)],
+  (table) => [index("org_area_index").on(table.org)],
+);
+
+export const basePacks = pgTable(
+  "base_packs",
+  {
+    id: text().primaryKey(),
+    name: text().notNull(),
+    lcoPrice: integer().notNull(),
+    customerPrice: integer().notNull(),
+    org: text("organization_id")
+      .notNull()
+      .references(() => organization.id),
+  },
+  (table) => [index("org_base_pack_index").on(table.org)],
 );

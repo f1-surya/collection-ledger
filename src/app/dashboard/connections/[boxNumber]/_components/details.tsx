@@ -113,10 +113,9 @@ export function Details({
   const onPackSelect = (id: string) => {
     setBasePackOpen(false);
 
-    const packId = Number(id);
-    if (packId === connection.basePack.id) return;
+    if (id === connection.basePack.id) return;
 
-    setSelectedPack(data?.find((pack) => pack.id === packId));
+    setSelectedPack(data?.find((pack) => pack.id === id));
   };
 
   const migrate = async () => {

@@ -1,82 +1,23 @@
 "use server";
 
+import { eq } from "drizzle-orm";
+import { db } from "@/db/drizzle";
+import { basePacks } from "@/db/schema";
 import "server-only";
-import { redirect } from "next/navigation";
-import z from "zod";
-import { authedFetch } from "../authed-fetch";
-import { tryCatch } from "../try-catch";
+import { getOrg } from "../get-org";
 
-const saveSchema = z.object({
-  name: z.string().toUpperCase(),
-  lcoPrice: z.coerce.number(),
-  customerPrice: z.coerce.number(),
-});
+export async function getBasePacks() {
+  const org = await getOrg();
+  const packs = await db
+    .select({
+      id: basePacks.id,
+      name: basePacks.name,
+      lcoPrice: basePacks.lcoPrice,
+      customerPrice: basePacks.customerPrice,
+    })
+    .from(basePacks)
+    .where(eq(basePacks.org, org.id));
 
-export async function saveBasePack(formData: FormData) {
-  const { data, success } = saveSchema.safeParse({
-    name: formData.get("name"),
-    lcoPrice: formData.get("lcoPrice"),
-    customerPrice: formData.get("customerPrice"),
-  });
-
-  if (!success) return;
-
-  const { error } = await tryCatch(
-    authedFetch("/pack", { method: "POST", body: JSON.stringify(data) }, true),
-  );
-
-  if (error) {
-    console.error(error);
-    redirect("/error");
-  }
-
-  redirect("/dashboard/base-packs");
-}
-
-export async function deleteBasePack(formData: FormData) {
-  const id = formData.get("id")?.toString();
-
-  if (!id) return;
-
-  const { error } = await tryCatch(
-    authedFetch(`/pack?id=${id}`, { method: "DELETE" }, true),
-  );
-
-  if (error) {
-    console.error(error);
-    redirect("/dashboard/base-packs?errorDelete=true");
-  }
-
-  redirect("/dashboard/base-packs");
-}
-
-const updateSchema = z.object({
-  id: z.string(),
-  name: z.string().toUpperCase(),
-  lcoPrice: z.coerce.number(),
-  customerPrice: z.coerce.number(),
-});
-
-export async function editBasePack(formData: FormData) {
-  const { data, success } = updateSchema.safeParse({
-    id: formData.get("id"),
-    name: formData.get("name"),
-    lcoPrice: formData.get("lcoPrice"),
-    customerPrice: formData.get("customerPrice"),
-  });
-
-  if (!success) return;
-
-  const { error } = await authedFetch(
-    "/pack",
-    { method: "PUT", body: JSON.stringify(data) },
-    true,
-  );
-
-  if (error) {
-    console.error(error);
-    redirect("/dashboard/base-packs?errorEdit=true");
-  }
-
-  redirect("/dashboard/base-packs");
+  // Add connections count (currently hardcoded to 0 until connections table is implemented)
+  return packs.map((pack) => ({ ...pack, connections: 0 }));
 }

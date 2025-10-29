@@ -34,7 +34,7 @@
     "emptyTitle": "You have no saved areas yet"
   },
   "BasePack": {
-    "list": "Here is a list of all your pack",
+    "list": "Here is a list of all your packs",
     "addPack": "Create a new pack",
     "connectionsCount": " connections are using this pack.",
     "confirmDelete": "Confirm delete",
@@ -44,7 +44,8 @@
     "deleteFailTitle": "Unable to delete pack",
     "deleteFailDescription": "Something went wrong while deleting the pack. Please try again later.",
     "editTitle": "Rename pack",
-    "editFailTitle": "Unable to rename pack"
+    "editFailTitle": "Unable to rename pack",
+    "emptyTitle": "You have no saved base packs yet"
   },
   "ConnectionPage": {
     "noPayments": "This connection doesn't have any recorded payments."
