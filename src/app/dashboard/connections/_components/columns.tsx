@@ -2,17 +2,20 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
-import type { Area } from "../../areas/_components/areas";
-import type { BasePack } from "../../base-packs/_components/types";
 
 export type Connection = {
-  id: number;
+  id: string;
   name: string;
   boxNumber: string;
-  phoneNumber?: string;
-  area: Area;
-  basePack: BasePack;
-  lastPayment?: string;
+  phoneNumber: string | null;
+  area: { id: string; name: string };
+  basePack: {
+    id: string;
+    name: string;
+    lcoPrice: number;
+    customerPrice: number;
+  };
+  lastPayment: Date | null;
 };
 
 export const columns: ColumnDef<Connection>[] = [

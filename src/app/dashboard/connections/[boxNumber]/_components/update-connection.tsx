@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import useSWR from "swr";
-import z from "zod";
+import type z from "zod";
 import type { Area } from "@/app/dashboard/areas/_components/areas";
 import { Button } from "@/components/ui/button";
 import { CustomFormField } from "@/components/ui/custom-field";
@@ -16,27 +17,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Spinner } from "@/components/ui/spinner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { fetcher } from "@/lib/fetcher";
+import { connectionUpdateSchema } from "@/lib/zod-stuff";
 import type { Connection } from "../../_components/columns";
-
-const connectionUpdateSchema = z.object({
-  name: z
-    .string()
-    .min(4, { message: "Name should contain at least 4 characterns" })
-    .trim()
-    .toUpperCase(),
-  phoneNumber: z
-    .string()
-    .min(10, { message: "Not a valid phone number" })
-    .trim(),
-  boxNumber: z
-    .string()
-    .min(10, { message: "Smartcard should be at least 10 characters long" })
-    .trim()
-    .toUpperCase(),
-  area: z.nanoid({ message: "Required field" }),
-});
 
 interface Props {
   connection: Connection;
@@ -53,10 +38,12 @@ export default function UpdateConnection({
   onOpenChange,
   callback,
 }: Props) {
+  const [saving, setSaving] = useState(false);
   const form = useForm<z.infer<typeof connectionUpdateSchema>>({
     resolver: zodResolver(connectionUpdateSchema),
     defaultValues: {
       ...connection,
+      phoneNumber: connection.phoneNumber ?? undefined,
       area: connection.area.id,
     },
   });
@@ -64,6 +51,7 @@ export default function UpdateConnection({
   const { data: areas } = useSWR<Area[]>("/api/area", fetcher);
 
   const save = async (data: z.infer<typeof connectionUpdateSchema>) => {
+    setSaving(true);
     const res = await fetch("/api/connection", {
       method: "PUT",
       body: JSON.stringify({ id: connection.id, ...data }),
@@ -83,6 +71,7 @@ export default function UpdateConnection({
         form.setError(field, { message: [errors[field]] });
       }
     }
+    setSaving(false);
   };
 
   return (
@@ -131,7 +120,9 @@ export default function UpdateConnection({
             <SheetClose asChild>
               <Button variant="destructive">Cancel</Button>
             </SheetClose>
-            <Button type="submit">Save</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? <Spinner /> : "Save"}
+            </Button>
           </SheetFooter>
         </form>
       </SheetContent>

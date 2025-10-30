@@ -6,7 +6,6 @@ export default async function Areas() {
 
   return (
     <main className="p-4">
-      {/* @ts-expect-error */}
       <AreasList areas={areas} />
     </main>
   );

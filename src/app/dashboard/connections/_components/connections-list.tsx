@@ -25,7 +25,7 @@ const ConnectionCard = ({
 }: {
   connection: Connection;
   now: Date;
-  onClick: (connectionId: number) => void;
+  onClick: (connectionId: string) => void;
 }) => {
   const setConnection = useCallback(
     () => onClick(connection.id),
@@ -85,7 +85,7 @@ export default function ConnectionsList({
     );
   }, [search, connections]);
   const showConnection = useCallback(
-    (connectionId: number) => {
+    (connectionId: string) => {
       const found = connections.find((con) => con.id === connectionId);
       if (found) setCurrConnection(found);
     },
@@ -93,12 +93,10 @@ export default function ConnectionsList({
   );
   const t = useTranslations("Connections");
 
-  const markAsPaid = (connectionId: number) => {
+  const markAsPaid = (connectionId: string) => {
     setConnections((prevCons) =>
       prevCons.map((con) =>
-        con.id === connectionId
-          ? { ...con, lastPayment: new Date().toISOString() }
-          : con,
+        con.id === connectionId ? { ...con, lastPayment: new Date() } : con,
       ),
     );
     setCurrConnection(undefined);

@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import z from "zod";
 import { db } from "@/db/drizzle";
-import { areas } from "@/db/schema";
+import { areas, connections } from "@/db/schema";
 import { getAreas } from "@/lib/area";
 import { getOrg } from "@/lib/get-org";
 
@@ -73,7 +73,23 @@ export async function DELETE(req: NextRequest) {
     );
   }
 
-  await db.delete(areas).where(eq(areas.id, id));
+  const org = await getOrg();
+  const conns = await db
+    .select({ id: connections.id })
+    .from(connections)
+    .where(and(eq(connections.area, id), eq(connections.org, org.id)));
+
+  if (conns.length > 0) {
+    return NextResponse.json(
+      {
+        message:
+          "There are a few connections in this area, so it can't be deleted.",
+      },
+      { status: 409 },
+    );
+  }
+
+  await db.delete(areas).where(and(eq(areas.id, id), eq(areas.org, org.id)));
 
   return new Response(null, { status: 200 });
 }

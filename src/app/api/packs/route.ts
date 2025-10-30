@@ -3,8 +3,8 @@ import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import z from "zod";
 import { db } from "@/db/drizzle";
-import { basePacks } from "@/db/schema";
-import { getBasePacks } from "@/lib/actions/base-packs";
+import { basePacks, connections } from "@/db/schema";
+import { getBasePacks } from "@/lib/base-packs";
 import { getOrg } from "@/lib/get-org";
 
 const packSchema = z.object({
@@ -85,6 +85,22 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json(
       { message: "Id of the pack to be deleted must be provided" },
       { status: 400 },
+    );
+  }
+
+  const org = await getOrg();
+  const conns = await db
+    .select({ id: connections.id })
+    .from(connections)
+    .where(and(eq(connections.org, org.id), eq(connections.basePack, id)));
+
+  if (conns.length > 0) {
+    return NextResponse.json(
+      {
+        message:
+          "There are a few connections using this pack, so it can't be deleted.",
+      },
+      { status: 409 },
     );
   }
 

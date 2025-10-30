@@ -28,7 +28,7 @@ import type { Connection } from "./columns";
 interface Props {
   connection?: Connection;
   onOpenChange: Dispatch<SetStateAction<Connection | undefined>>;
-  callback: (connectionId: number) => void;
+  callback: (connectionId: string) => void;
 }
 
 export function ConnectionDetails({

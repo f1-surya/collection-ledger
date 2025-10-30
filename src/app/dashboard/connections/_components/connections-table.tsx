@@ -55,13 +55,11 @@ export function ConnectionTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  const markAsPaid = (connectionId: number) => {
+  const markAsPaid = (connectionId: string) => {
     setConnections((prevCons) =>
       prevCons.map((con) =>
         // @ts-expect-error
-        con.id === connectionId
-          ? { ...con, lastPayment: new Date().toISOString() }
-          : con,
+        con.id === connectionId ? { ...con, lastPayment: new Date() } : con,
       ),
     );
     setCurrConnection(undefined);

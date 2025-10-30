@@ -176,7 +176,7 @@ export function Details({
         setConnection({
           ...connection,
           basePack: payment.currentPack,
-          lastPayment: undefined,
+          lastPayment: null,
         });
       }
     }
@@ -219,7 +219,7 @@ export function Details({
 
           {/* Phone Number */}
           {connection.phoneNumber && (
-            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
                   <Phone

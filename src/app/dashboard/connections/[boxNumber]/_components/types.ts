@@ -4,7 +4,7 @@ import type { Connection } from "../../_components/columns";
 export interface Payment {
   id: number;
   isMigration: boolean;
-  date: string;
+  date: Date;
   customerPrice: number;
   lcoPrice: number;
   currentPack: BasePack;
