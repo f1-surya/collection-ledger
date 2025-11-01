@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { index, integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { organization } from "./auth";
 
 export const areas = pgTable(
@@ -54,6 +61,46 @@ export const connectionsRelations = relations(connections, ({ one }) => ({
   }),
   basePack: one(basePacks, {
     fields: [connections.basePack],
+    references: [basePacks.id],
+  }),
+}));
+
+export const payments = pgTable(
+  "payments",
+  {
+    id: text().primaryKey(),
+    connection: text()
+      .notNull()
+      .references(() => connections.id),
+    date: timestamp().notNull().defaultNow(),
+    to: text().references(() => basePacks.id),
+    currentPack: text()
+      .notNull()
+      .references(() => basePacks.id),
+    isMigration: boolean().default(false),
+    lcoPrice: integer().notNull(),
+    customerPrice: integer().notNull(),
+    org: text()
+      .notNull()
+      .references(() => organization.id),
+  },
+  (table) => [
+    index("payments_date_index").on(table.date),
+    index("payments_connection_index").on(table.connection),
+  ],
+);
+
+export const paymentRelations = relations(payments, ({ one }) => ({
+  connection: one(connections, {
+    fields: [payments.connection],
+    references: [connections.id],
+  }),
+  currentPack: one(basePacks, {
+    fields: [payments.currentPack],
+    references: [basePacks.id],
+  }),
+  to: one(basePacks, {
+    fields: [payments.to],
     references: [basePacks.id],
   }),
 }));

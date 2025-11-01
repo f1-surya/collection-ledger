@@ -56,5 +56,5 @@ export default async function ConnectionInfo({
     );
   }
 
-  return <Details currConnection={connection} currPayments={[]} />;
+  return <Details currConnection={connection} />;
 }
