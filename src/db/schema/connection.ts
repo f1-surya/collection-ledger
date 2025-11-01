@@ -77,7 +77,7 @@ export const payments = pgTable(
     currentPack: text()
       .notNull()
       .references(() => basePacks.id),
-    isMigration: boolean().default(false),
+    isMigration: boolean().notNull().default(false),
     lcoPrice: integer().notNull(),
     customerPrice: integer().notNull(),
     org: text()
