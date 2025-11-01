@@ -19,7 +19,7 @@ const PaymentCard = ({
   deletePayment,
 }: {
   payment: Payment;
-  deletePayment: (id: number) => Promise<void>;
+  deletePayment: (id: string) => Promise<void>;
 }) => (
   <Card className="hover:shadow-md transition-shadow">
     <CardHeader>
@@ -68,7 +68,7 @@ export default function PaymentsHistory({
   loading,
 }: {
   payments: Payment[];
-  deletePayment: (id: number) => Promise<void>;
+  deletePayment: (id: string) => Promise<void>;
   loading?: boolean;
 }) {
   const t = useTranslations("ConnectionPage");

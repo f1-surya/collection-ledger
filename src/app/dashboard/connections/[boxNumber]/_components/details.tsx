@@ -141,7 +141,7 @@ export function Details({ currConnection }: { currConnection: Connection }) {
     setMigrating(false);
   };
 
-  const deletePayment = async (id: number) => {
+  const deletePayment = async (id: string) => {
     const promise = fetch(`/api/payment?paymentId=${id}`, {
       method: "DELETE",
     });
