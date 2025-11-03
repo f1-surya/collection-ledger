@@ -1,20 +1,29 @@
+import { isThisMonth, startOfMonth } from "date-fns";
+import { and, desc, eq, gte, lte, ne } from "drizzle-orm";
+import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
-import type { Payment } from "@/app/dashboard/connections/[boxNumber]/_components/types";
-import { authedFetch } from "@/lib/authed-fetch";
+import { db } from "@/db/drizzle";
+import { connections, payments } from "@/db/schema";
+import { getOrg } from "@/lib/get-org";
 
 export async function GET(req: NextRequest) {
   const connectionId = req.nextUrl.searchParams.get("connectionId");
   if (!connectionId) {
     return NextResponse.json(
-      { message: "Please provide connection id" },
+      { message: "Please provide a connection id" },
       { status: 400 },
     );
   }
 
-  const { data, error } = await authedFetch(`/payment/${connectionId}`);
-  if (error) {
-    return NextResponse.json({ message: error }, { status: 500 });
-  }
+  const org = await getOrg();
+  const data = await db.query.payments.findMany({
+    where: and(eq(payments.org, org.id), eq(payments.connection, connectionId)),
+    with: {
+      currentPack: true,
+      to: true,
+    },
+    orderBy: desc(payments.date),
+  });
 
   return NextResponse.json(data, { status: 200 });
 }
@@ -28,17 +37,72 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { data, error } = await authedFetch<Payment>(
-    `/payment?connectionId=${connectionId}`,
-    {
-      method: "POST",
+  const org = await getOrg();
+
+  const connection = await db.query.connections.findFirst({
+    where: and(eq(connections.org, org.id), eq(connections.id, connectionId)),
+    with: {
+      basePack: true,
     },
-  );
-  if (error) {
-    return NextResponse.json({ message: error }, { status: 500 });
+  });
+
+  if (!connection) {
+    return NextResponse.json(
+      {
+        message:
+          "The connection for the connectionId you have provided doesn't exist.",
+      },
+      { status: 400 },
+    );
   }
 
-  return NextResponse.json(data, { status: 200 });
+  const now = new Date();
+  const thisMonthPayment = await db
+    .select({ id: payments.id })
+    .from(payments)
+    .where(
+      and(
+        eq(payments.connection, connectionId),
+        eq(payments.org, org.id),
+        gte(payments.date, startOfMonth(now)),
+        lte(payments.date, now),
+      ),
+    );
+
+  if (thisMonthPayment.length > 0) {
+    return NextResponse.json(
+      {
+        message: "A payment for this month already exists for this connection.",
+      },
+      { status: 400 },
+    );
+  }
+
+  const data = await db.transaction(async (tx) => {
+    const newPayments = await tx
+      .insert(payments)
+      .values({
+        id: nanoid(),
+        connection: connectionId,
+        currentPack: connection.basePack.id,
+        org: org.id,
+        lcoPrice: connection.basePack.lcoPrice,
+        customerPrice: connection.basePack.customerPrice,
+      })
+      .returning();
+
+    await db
+      .update(connections)
+      .set({ lastPayment: newPayments[0].date })
+      .where(eq(connections.id, connection.id));
+
+    return newPayments[0];
+  });
+
+  return NextResponse.json(
+    { ...data, currentPack: connection.basePack },
+    { status: 200 },
+  );
 }
 
 export async function DELETE(req: NextRequest) {
@@ -50,16 +114,54 @@ export async function DELETE(req: NextRequest) {
     );
   }
 
-  const { error } = await authedFetch(
-    `/payment?paymentId=${paymentId}`,
-    {
-      method: "DELETE",
-    },
-    true,
-  );
-  if (error) {
-    return NextResponse.json({ message: error }, { status: 500 });
+  const org = await getOrg();
+
+  const paymentToDelete = await db.query.payments.findFirst({
+    where: and(eq(payments.org, org.id), eq(payments.id, paymentId)),
+  });
+  if (!paymentToDelete) {
+    return NextResponse.json(
+      { message: "The payment you're trying to delete doesn't exist" },
+      { status: 400 },
+    );
   }
+
+  if (!isThisMonth(paymentToDelete.date)) {
+    return NextResponse.json(
+      { message: "You can only delete payments for the current month." },
+      { status: 400 },
+    );
+  }
+
+  await db.transaction(async (tx) => {
+    const previousPayment = await tx.query.payments.findFirst({
+      where: and(
+        eq(payments.org, org.id),
+        eq(payments.connection, paymentToDelete.connection),
+        ne(payments.id, paymentToDelete.id),
+      ),
+      orderBy: desc(payments.date),
+    });
+
+    let lastPayment: Date | null = null;
+
+    if (previousPayment) {
+      lastPayment = previousPayment.date;
+    }
+
+    await tx
+      .update(connections)
+      .set({ lastPayment, basePack: paymentToDelete.currentPack })
+      .where(
+        and(
+          eq(connections.org, org.id),
+          eq(connections.id, paymentToDelete.connection),
+        ),
+      );
+    await tx
+      .delete(payments)
+      .where(and(eq(payments.org, org.id), eq(payments.id, paymentId)));
+  });
 
   return NextResponse.json({}, { status: 200 });
 }

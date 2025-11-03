@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/forms/auth-forms";
@@ -10,16 +10,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Login to continue",
 };
 
 export default async function Login() {
-  const cookieJar = await cookies();
-  const authed = cookieJar.get("refresh_token");
+  const session = await auth.api.getSession({ headers: await headers() });
 
-  if (authed) {
+  if (session) {
     redirect("/dashboard");
   }
 

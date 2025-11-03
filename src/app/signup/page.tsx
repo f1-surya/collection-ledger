@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -11,14 +11,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { auth } from "@/lib/auth";
 
 export default async function Signup() {
-  const [cookieJar, t] = await Promise.all([
-    cookies(),
+  const [session, t] = await Promise.all([
+    auth.api.getSession({ headers: await headers() }),
     getTranslations("Signup"),
   ]);
 
-  if (cookieJar.has("refresh_token")) {
+  if (session) {
     redirect("/dashboard");
   }
 

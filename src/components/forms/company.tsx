@@ -1,78 +1,98 @@
 "use client";
 
-import { LoaderCircle } from "lucide-react";
-import { useActionState } from "react";
-import { saveCompany, updateCompany } from "@/lib/actions/company";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircleIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { authClient } from "@/lib/auth-client";
+import { Alert, AlertTitle } from "../ui/alert";
 import { Button } from "../ui/button";
-import { Label } from "../ui/label";
+import { CustomFormField } from "../ui/custom-field";
+import { Form } from "../ui/form";
 import { Spinner } from "../ui/spinner";
-import { Textarea } from "../ui/textarea";
-import { FormField } from "./formfield";
+
+const companySchema = z.object({
+  name: z
+    .string()
+    .min(5, { message: "Company name should have at least 5 characters." })
+    .trim(),
+  slug: z.email(),
+  phoneNumber: z
+    .string()
+    .min(10, { message: "Phone number should contain at least 10 digits." })
+    .trim(),
+  address: z
+    .string()
+    .min(10, { message: "Address should have at least 10 characters." })
+    .trim(),
+});
 
 interface CompanyFormProps {
-  defaultValues?: {
-    name?: string;
-    email?: string;
-    phone?: string;
-    address?: string;
-  };
+  defaultValues?: z.infer<typeof companySchema>;
 }
 
 export function CompanyForm({ defaultValues }: CompanyFormProps) {
-  const [state, action, isPending] = useActionState(updateCompany, {});
+  const [isPending, setIsPending] = useState(false);
+  const [alert, setAlert] = useState<string | undefined>();
+  const form = useForm<z.infer<typeof companySchema>>({
+    resolver: zodResolver(companySchema),
+    defaultValues,
+  });
+
+  const update = async (data: z.infer<typeof companySchema>) => {
+    setIsPending(true);
+    setAlert(undefined);
+    const { error } = await authClient.organization.update({
+      data,
+    });
+    if (error) {
+      setAlert(error.message);
+    }
+    setIsPending(false);
+  };
 
   return (
-    <form action={action} className="space-y-4 text-start">
-      <FormField
-        id="companyName"
-        type="text"
-        label="Company name"
-        placeHolder="Dalton ltd."
-        required
-        defaultValue={state.name ?? defaultValues?.name}
-        error={state.errors?.name}
-      />
-      <FormField
-        id="companyEmail"
-        type="email"
-        label="Company email"
-        placeHolder="contact@dalton.com"
-        required
-        defaultValue={state.email ?? defaultValues?.email}
-        error={state.errors?.email}
-      />
-      <FormField
-        id="phone"
-        type="tel"
-        label="Company phone number"
-        placeHolder="+91-8905495648"
-        required
-        defaultValue={state.phone ?? defaultValues?.phone}
-        error={state.errors?.phone}
-      />
-      <div className="grid gap-2">
-        <Label
-          htmlFor="address"
-          className={`${state.errors?.address && "text-destructive"}`}
-        >
-          Company address:
-        </Label>
-        <Textarea
-          id="address"
-          name="address"
-          placeholder="10969 Alta View Drive, Studio City, CA"
-          defaultValue={state.address ?? defaultValues?.address}
-          aria-invalid={state.errors?.address !== undefined}
+    <form onSubmit={form.handleSubmit(update)} className="space-y-4 text-start">
+      <Form {...form}>
+        <CustomFormField
+          control={form.control}
+          name="name"
+          label="Company name"
+          placeholder="Dalton ltd."
           required
         />
-        {state.errors?.address && (
-          <p className="text-destructive text-sm">{state.errors.address}</p>
-        )}
-      </div>
-      {state.error && (
-        <div className="w-full bg-destructive/30 rounded p-4">
-          {state.error}
-        </div>
+        <CustomFormField
+          control={form.control}
+          name="slug"
+          label="Company email"
+          placeholder="contact@dalton.com"
+          type="email"
+          required
+        />
+        <CustomFormField
+          control={form.control}
+          name="phoneNumber"
+          label="Company phone number"
+          placeholder="+91-8905495648"
+          type="tel"
+          required
+        />
+        <CustomFormField
+          control={form.control}
+          name="address"
+          label="Company address"
+          placeholder="10969 Alta View Drive, Studio City, CA"
+          type="textarea"
+          required
+        />
+      </Form>
+      {alert && (
+        <Alert variant="destructive">
+          <AlertCircleIcon />
+          <AlertTitle>{alert}</AlertTitle>
+        </Alert>
       )}
       <Button type="submit" disabled={isPending} className="w-full">
         {isPending ? <Spinner /> : "Update company"}
@@ -82,60 +102,75 @@ export function CompanyForm({ defaultValues }: CompanyFormProps) {
 }
 
 export function CreateCompanyForm() {
-  const [state, action, isPending] = useActionState(saveCompany, {});
+  const [isPending, setIsPending] = useState(false);
+  const [alert, setAlert] = useState<string | undefined>();
+  const form = useForm<z.infer<typeof companySchema>>({
+    resolver: zodResolver(companySchema),
+  });
+  const router = useRouter();
+
+  const save = async (data: z.infer<typeof companySchema>) => {
+    setIsPending(true);
+    setAlert(undefined);
+
+    const { data: slugCheck } = await authClient.organization.checkSlug({
+      slug: data.slug,
+    });
+    if (!slugCheck?.status) {
+      setAlert("A company with same email already exists");
+    } else {
+      const { error } = await authClient.organization.create({
+        ...data,
+      });
+      if (error) {
+        setAlert(error.message);
+      } else {
+        router.push("/dashboard");
+      }
+    }
+    setIsPending(false);
+  };
 
   return (
-    <form action={action} className="space-y-4 text-start">
-      <FormField
-        id="name"
-        type="text"
-        label="Company name"
-        placeHolder="Dalton ltd."
-        required
-        defaultValue={state.name}
-        error={state.errors?.name}
-      />
-      <FormField
-        id="email"
-        type="email"
-        label="Company email"
-        placeHolder="contact@dalton.com"
-        required
-        defaultValue={state.email}
-        error={state.errors?.email}
-      />
-      <FormField
-        id="phone"
-        type="tel"
-        label="Company phone number"
-        placeHolder="+91-8905495648"
-        required
-        defaultValue={state.phone}
-        error={state.errors?.phone}
-      />
-      <div className="grid gap-2">
-        <Label
-          htmlFor="address"
-          className={`${state.errors?.address && "text-destructive"}`}
-        >
-          Company address:
-        </Label>
-        <Textarea
-          id="address"
-          name="address"
-          placeholder="10969 Alta View Drive, Studio City, CA"
-          defaultValue={state.address}
-          aria-invalid={state.errors?.address !== undefined}
+    <form onSubmit={form.handleSubmit(save)} className="space-y-4 text-start">
+      <Form {...form}>
+        <CustomFormField
+          control={form.control}
+          name="name"
+          label="Company name"
+          placeholder="Dalton ltd."
           required
         />
-        {state.errors?.address && (
-          <p className="text-destructive text-sm">{state.errors.address}</p>
-        )}
-      </div>
-      {state.error && (
-        <div className="w-full bg-destructive/30 rounded p-4">
-          {state.error}
-        </div>
+        <CustomFormField
+          control={form.control}
+          name="slug"
+          label="Company email"
+          placeholder="contact@dalton.com"
+          type="email"
+          required
+        />
+        <CustomFormField
+          control={form.control}
+          name="phoneNumber"
+          label="Company phone number"
+          placeholder="+91-8905495648"
+          type="tel"
+          required
+        />
+        <CustomFormField
+          control={form.control}
+          name="address"
+          label="Company address"
+          placeholder="10969 Alta View Drive, Studio City, CA"
+          type="textarea"
+          required
+        />
+      </Form>
+      {alert && (
+        <Alert variant="destructive">
+          <AlertCircleIcon />
+          <AlertTitle>{alert}</AlertTitle>
+        </Alert>
       )}
       <Button type="submit" disabled={isPending} className="w-full">
         {isPending ? <Spinner /> : "Save"}

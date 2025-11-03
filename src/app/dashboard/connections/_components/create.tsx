@@ -1,9 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import useSWR from "swr";
-import z from "zod";
+import type z from "zod";
 import { Button } from "@/components/ui/button";
 import { CustomFormField } from "@/components/ui/custom-field";
 import CustomSelect from "@/components/ui/custom-select";
@@ -17,43 +19,28 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Spinner } from "@/components/ui/spinner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { fetcher } from "@/lib/fetcher";
+import { connectionSchema } from "@/lib/zod-stuff";
 
 interface Props {
   open: boolean;
   onOpenChange: (state: boolean) => void;
 }
 
-const connectionSchema = z.object({
-  name: z
-    .string()
-    .min(4, { message: "Name should contain at least 4 characterns" })
-    .trim()
-    .toUpperCase(),
-  phoneNumber: z
-    .string()
-    .min(10, { message: "Not a valid phone number" })
-    .trim()
-    .optional(),
-  boxNumber: z
-    .string()
-    .min(10, { message: "Smartcard should be at least 10 characters long" })
-    .trim()
-    .toUpperCase(),
-  area: z.number({ message: "Required field" }),
-  basePack: z.number({ message: "Required field" }),
-});
-
 export default function CreateConnection({ open, onOpenChange }: Props) {
+  const [saving, setSaving] = useState(false);
   const form = useForm<z.infer<typeof connectionSchema>>({
     resolver: zodResolver(connectionSchema),
   });
   const isMobile = useIsMobile();
   const { data: areas } = useSWR("/api/area", fetcher);
   const { data: basePacks } = useSWR("/api/packs", fetcher);
+  const router = useRouter();
 
   const save = async (data: z.infer<typeof connectionSchema>) => {
+    setSaving(true);
     const res = await fetch("/api/connection", {
       method: "POST",
       body: JSON.stringify(data),
@@ -63,7 +50,7 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
     });
 
     if (res.ok) {
-      window.location.reload();
+      router.push(`/dashboard/connections/${data.boxNumber}`);
     } else if (res.status !== 500 && res.status !== 200) {
       const errors = (await res.json()) as { [key: string]: string };
       for (const field in errors) {
@@ -71,6 +58,7 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
         form.setError(field, { message: [errors[field]] });
       }
     }
+    setSaving(false);
   };
 
   return (
@@ -126,7 +114,9 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
             <SheetClose asChild>
               <Button variant="destructive">Cancel</Button>
             </SheetClose>
-            <Button type="submit">Save</Button>
+            <Button type="submit" disabled={saving}>
+              {saving ? <Spinner /> : "Save"}
+            </Button>
           </SheetFooter>
         </form>
       </SheetContent>

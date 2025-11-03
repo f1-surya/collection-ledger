@@ -66,7 +66,18 @@ export default function SettingsPage() {
 
     toast.promise(prom, {
       loading: "Uploading data...",
-      success: "Data uploaded successfully!",
+      success: async (response) => {
+        const json = await response.json();
+        const { stats } = json;
+        if (stats.skippedDuplicates > 0) {
+          toast.warning(
+            `Import completed with ${stats.skippedDuplicates} duplicate(s) skipped. Check console for details.`,
+          );
+          console.log("Skipped box numbers:", stats.skippedBoxNumbers);
+        }
+        return `Data imported: ${stats.processedRows} rows processed, ${stats.createdAreas} areas created, ${stats.createdPacks} packs created`;
+      },
+      error: "Failed to upload data",
     });
 
     const res = await prom;

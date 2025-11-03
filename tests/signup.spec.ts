@@ -7,14 +7,14 @@ test.describe("Test signup and company creation", async () => {
     await page.waitForTimeout(500);
 
     await page
-      .getByRole("textbox", { name: "Name:" })
+      .getByRole("textbox", { name: "Name*:" })
       .fill(faker.person.fullName());
     await page
-      .getByRole("textbox", { name: "Email:" })
+      .getByRole("textbox", { name: "Email*:" })
       .fill(faker.internet.email());
-    await page.getByRole("textbox", { name: "Password:" }).fill("Password1!");
+    await page.getByRole("textbox", { name: "Password*:" }).fill("Password1!");
     await page
-      .getByRole("textbox", { name: "Enter password again:" })
+      .getByRole("textbox", { name: "Enter password again*:" })
       .fill("Password1!");
     await page.getByRole("button", { name: "Signup" }).click();
 
@@ -24,16 +24,16 @@ test.describe("Test signup and company creation", async () => {
     await page.waitForTimeout(500);
 
     await page
-      .getByRole("textbox", { name: "Company name:" })
+      .getByRole("textbox", { name: "Company name*:" })
       .fill(faker.company.name());
     await page
-      .getByRole("textbox", { name: "Company email:" })
+      .getByRole("textbox", { name: "Company email*:" })
       .fill(faker.internet.email());
     await page
-      .getByRole("textbox", { name: "Company phone number:" })
+      .getByRole("textbox", { name: "Company phone number*:" })
       .fill(faker.phone.number({ style: "international" }));
     await page
-      .getByRole("textbox", { name: "Company address:" })
+      .getByRole("textbox", { name: "Company address*:" })
       .fill(faker.location.streetAddress());
 
     await page.getByRole("button", { name: "Save" }).click();
@@ -46,11 +46,11 @@ test.describe("Test signup and company creation", async () => {
     await page.goto("/signup");
     await page.waitForTimeout(500);
 
-    const nameField = page.getByRole("textbox", { name: "Name:" });
-    const emailField = page.getByRole("textbox", { name: "Email:" });
-    const passwordField = page.getByRole("textbox", { name: "Password:" });
+    const nameField = page.getByRole("textbox", { name: "Name*:" });
+    const emailField = page.getByRole("textbox", { name: "Email*:" });
+    const passwordField = page.getByRole("textbox", { name: "Password*:" });
     const secondPasswordField = page.getByRole("textbox", {
-      name: "Enter password again:",
+      name: "Enter password again*:",
     });
     const submit = page.getByRole("button", { name: "Signup" });
 
@@ -77,7 +77,7 @@ test.describe("Test signup and company creation", async () => {
     await submit.click();
 
     await expect(
-      page.getByText("A user with the same email already exists."),
+      page.getByText("User already exists. Use another email."),
     ).toBeVisible();
   });
 
@@ -86,14 +86,14 @@ test.describe("Test signup and company creation", async () => {
     await page.waitForTimeout(500);
 
     await page
-      .getByRole("textbox", { name: "Name:" })
+      .getByRole("textbox", { name: "Name*:" })
       .fill(faker.person.fullName());
     await page
-      .getByRole("textbox", { name: "Email:" })
+      .getByRole("textbox", { name: "Email*:" })
       .fill(faker.internet.email());
-    await page.getByRole("textbox", { name: "Password:" }).fill("Password1!");
+    await page.getByRole("textbox", { name: "Password*:" }).fill("Password1!");
     await page
-      .getByRole("textbox", { name: "Enter password again:" })
+      .getByRole("textbox", { name: "Enter password again*:" })
       .fill("Password1!");
     await page.getByRole("button", { name: "Signup" }).click();
 
@@ -102,29 +102,31 @@ test.describe("Test signup and company creation", async () => {
     expect(page).toHaveURL("/create-company");
     await page.waitForTimeout(500);
 
-    await page.getByRole("textbox", { name: "Company name:" }).fill("sol");
+    await page.getByRole("textbox", { name: "Company name*:" }).fill("sol");
     await page
-      .getByRole("textbox", { name: "Company email:" })
+      .getByRole("textbox", { name: "Company email*:" })
       .fill("contact@shelbyltd.com");
     await page
-      .getByRole("textbox", { name: "Company phone number:" })
+      .getByRole("textbox", { name: "Company phone number*:" })
       .fill("+919191919191");
-    await page.getByRole("textbox", { name: "Company address:" }).fill("addd");
+    await page.getByRole("textbox", { name: "Company address*:" }).fill("addd");
     await page.getByRole("button", { name: "Save" }).click();
 
     await expect(page.getByText("Company name should have at")).toBeVisible();
     await expect(page.getByText("Address should have at least")).toBeVisible();
     await page
-      .getByRole("textbox", { name: "Company name:" })
+      .getByRole("textbox", { name: "Company name*:" })
       .fill("Some company");
     await page
-      .getByRole("textbox", { name: "Company address:" })
+      .getByRole("textbox", { name: "Company address*:" })
       .press("ControlOrMeta+a");
     await page
-      .getByRole("textbox", { name: "Company address:" })
+      .getByRole("textbox", { name: "Company address*:" })
       .fill("Good address");
     await page.getByRole("button", { name: "Save" }).click();
 
-    await expect(page.getByText("A company with provided email")).toBeVisible();
+    await expect(
+      page.getByText("A company with same email already exists"),
+    ).toBeVisible();
   });
 });

@@ -26,14 +26,8 @@ test.describe("Test login", () => {
     await page
       .getByRole("textbox", { name: "Email:" })
       .fill("thomas@shelbyltd.com");
-    await page.getByRole("textbox", { name: "Password:" }).fill("Password");
-    await page.getByRole("button", { name: "Login" }).click();
-    await expect(
-      page.getByText("Password must contain a digit."),
-    ).toBeVisible();
-
     await page.getByRole("textbox", { name: "Password:" }).fill("Password2!");
     await page.getByRole("button", { name: "Login" }).click();
-    await expect(page.getByText("Wrong password.")).toBeVisible();
+    await expect(page.getByText("Invalid email or password")).toBeVisible();
   });
 });

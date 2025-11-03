@@ -1,13 +1,12 @@
 import type { BasePack } from "@/app/dashboard/base-packs/_components/types";
-import type { Connection } from "../../_components/columns";
 
 export interface Payment {
-  id: number;
+  id: string;
   isMigration: boolean;
-  date: string;
+  date: Date;
   customerPrice: number;
   lcoPrice: number;
   currentPack: BasePack;
-  to?: BasePack;
-  connection: Connection;
+  to: BasePack | null;
+  connection: { name: string };
 }

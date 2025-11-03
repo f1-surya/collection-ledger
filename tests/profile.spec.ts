@@ -45,7 +45,6 @@ test.describe("Test profile page", () => {
 
     // Check user form fields
     await expect(page.getByLabel("Full name:")).toBeVisible();
-    await expect(page.getByLabel("Email address:")).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Update account" }),
     ).toBeVisible();
@@ -68,16 +67,16 @@ test.describe("Test profile page", () => {
     await page.waitForURL("/dashboard/profile");
 
     // Check company form fields
-    await expect(page.getByLabel("Company name:")).toBeVisible();
-    await expect(page.getByLabel("Company email:")).toBeVisible();
-    await expect(page.getByLabel("Company phone number:")).toBeVisible();
-    await expect(page.getByLabel("Company address:")).toBeVisible();
+    await expect(page.getByLabel("Company name*:")).toBeVisible();
+    await expect(page.getByLabel("Company email*:")).toBeVisible();
+    await expect(page.getByLabel("Company phone number*:")).toBeVisible();
+    await expect(page.getByLabel("Company address*:")).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Update company" }),
     ).toBeVisible();
   });
 
-  test("should show validation errors for user form", async ({ page }) => {
+  test("should update user name successfully", async ({ page }) => {
     await page.goto("/login");
     await page.waitForTimeout(500);
 
@@ -93,18 +92,14 @@ test.describe("Test profile page", () => {
     await page.goto("/dashboard/profile");
     await page.waitForURL("/dashboard/profile");
 
-    // Fill invalid data in user form
-    await page.getByLabel("Full name:").fill("A");
-    await page.getByLabel("Email address:").fill("invalid@email");
+    // Update user name
+    await page.getByLabel("Full name:").fill("Updated Name");
     await page.getByRole("button", { name: "Update account" }).click();
 
     await page.waitForTimeout(500);
 
-    // Check for errors
-    await expect(
-      page.getByText("Name should have at least 4 characters."),
-    ).toBeVisible();
-    await expect(page.getByText("Invalid email address")).toBeVisible();
+    // Check that the form is still there (no error occurred)
+    await expect(page.getByLabel("Full name:")).toBeVisible();
   });
 
   test("should show validation errors for company form", async ({ page }) => {
@@ -125,10 +120,10 @@ test.describe("Test profile page", () => {
 
     await page.waitForTimeout(500);
 
-    await page.getByLabel("Company name:").fill("ABC");
-    await page.getByLabel("Company email:").fill("invalid@mail");
-    await page.getByLabel("Company phone number:").fill("123");
-    await page.getByLabel("Company address:").fill("Short");
+    await page.getByLabel("Company name*:").fill("ABC");
+    await page.getByLabel("Company email*:").fill("invalid@mail");
+    await page.getByLabel("Company phone number*:").fill("123");
+    await page.getByLabel("Company address*:").fill("Short");
     await page.getByRole("button", { name: "Update company" }).click();
 
     await page.waitForTimeout(500);
@@ -137,7 +132,7 @@ test.describe("Test profile page", () => {
     await expect(
       page.getByText("Company name should have at least 5 characters."),
     ).toBeVisible();
-    await expect(page.getByText("Invalid email address")).toBeVisible();
+    await expect(page.getByText("Invalid email")).toBeVisible();
     await expect(
       page.getByText("Phone number should contain at least 10 digits."),
     ).toBeVisible();

@@ -1,6 +1,7 @@
 export type BasePack = {
-  id: number;
+  id: string;
   name: string;
   customerPrice: number;
   lcoPrice: number;
+  connections?: number;
 };
