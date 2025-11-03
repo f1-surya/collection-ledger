@@ -76,7 +76,8 @@ export async function POST(request: Request) {
   console.log(`Starting data import for org: ${org.id}`);
 
   const workbook = read(await request.arrayBuffer(), { type: "buffer" });
-  const sheet = workbook.Sheets.Sheet1;
+  const firstSheet = Object.keys(workbook.Sheets);
+  const sheet = workbook.Sheets[firstSheet[0]];
   const jsonData = utils.sheet_to_json(sheet, {
     header: 1,
     defval: "",
@@ -101,6 +102,19 @@ export async function POST(request: Request) {
     },
     {} as { [key: string]: number },
   );
+
+  const requiredHeaders = ["name", "smartcard", "address", "package"];
+  for (const req of requiredHeaders) {
+    if (!(req in cols)) {
+      console.log(
+        `Import failed: Missing required header '${req}' for org: ${org.id}`,
+      );
+      return NextResponse.json(
+        { message: `Missing required header: ${req}` },
+        { status: 400 },
+      );
+    }
+  }
 
   // Initialize counters and tracking
   let processedRows = 0;
