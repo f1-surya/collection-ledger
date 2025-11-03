@@ -1,3 +1,5 @@
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { CreateCompanyForm } from "@/components/forms/company";
 import {
@@ -7,11 +9,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getOrg } from "@/lib/get-org";
+import { auth } from "@/lib/auth";
 
 export default async function CreateCompany() {
-  const t = await getTranslations("CreateCompany");
-  await getOrg("/create-company");
+  const [t, h] = await Promise.all([
+    getTranslations("CreateCompany"),
+    headers(),
+  ]);
+
+  const orgs = await auth.api.listOrganizations({ headers: h });
+  if (orgs.length > 0) {
+    redirect("/dashboard");
+  }
 
   return (
     <main className="flex items-center justify-center h-dvh w-dvw">
