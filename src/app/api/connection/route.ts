@@ -1,20 +1,43 @@
+import { and, eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
-import { authedFetch } from "@/lib/authed-fetch";
+import { db } from "@/db/drizzle";
+import { connections } from "@/db/schema";
+import { getOrg } from "@/lib/get-org";
+import {
+  connectionSchema,
+  connectionUpdateSchema,
+  formatZodErrors,
+} from "@/lib/zod-stuff";
+
+async function checkBoxNumber(boxNumber: string, orgId: string) {
+  const connection = await db
+    .select({ name: connections.name })
+    .from(connections)
+    .where(
+      and(eq(connections.org, orgId), eq(connections.boxNumber, boxNumber)),
+    );
+  if (connection.length > 0) {
+    return `Box number ${boxNumber} is already assigned to ${connection[0].name}`;
+  }
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
-  const { error } = await authedFetch(
-    "/connection",
-    { method: "POST", body: JSON.stringify(body) },
-    true,
-  );
+  const { data, error } = connectionSchema.safeParse(body);
   if (error) {
-    if (error.status === 500) {
-      console.error(error);
-    }
-    return NextResponse.json(error.errorData, { status: error.status });
+    return NextResponse.json(formatZodErrors(error), { status: 400 });
   }
+
+  const org = await getOrg();
+
+  const conflict = await checkBoxNumber(data.boxNumber, org.id);
+  if (conflict) {
+    return NextResponse.json({ boxNumber: conflict }, { status: 400 });
+  }
+
+  await db.insert(connections).values({ id: nanoid(), ...data, org: org.id });
 
   return NextResponse.json({ message: "Connection saved successfully." });
 }
@@ -22,18 +45,23 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   const body = await req.json();
 
-  const { error } = await authedFetch(
-    "/connection",
-    { method: "PUT", body: JSON.stringify(body) },
-    true,
-  );
+  const { data, error } = connectionUpdateSchema.safeParse(body);
+
   if (error) {
-    if (error.status === 500) {
-      console.error(error);
-    }
-    console.error(error);
-    return NextResponse.json(error.errorData, { status: error.status });
+    return NextResponse.json(formatZodErrors(error), { status: 400 });
   }
+
+  const org = await getOrg();
+
+  const conflict = await checkBoxNumber(data.boxNumber, org.id);
+  if (conflict) {
+    return NextResponse.json({ boxNumber: conflict }, { status: 400 });
+  }
+
+  await db
+    .update(connections)
+    .set({ ...data })
+    .where(and(eq(connections.org, org.id), eq(connections.id, body.id)));
 
   return NextResponse.json({ message: "Connection updated successfully." });
 }

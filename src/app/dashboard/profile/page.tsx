@@ -1,20 +1,21 @@
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { CompanyForm } from "@/components/forms/company";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { authedFetch } from "@/lib/authed-fetch";
+import { auth } from "@/lib/auth";
 import { UserForm } from "./_components/user-form";
 
 export default async function Profile() {
   const t = await getTranslations("Profile");
-  const [
-    { data: user, error: userError },
-    { data: company, error: companyError },
-  ] = await Promise.all([authedFetch("/user"), authedFetch("/company")]);
+  const h = await headers();
+  const [res, comp] = await Promise.all([
+    auth.api.getSession({ headers: h }),
+    auth.api.getFullOrganization({ headers: h }),
+  ]);
 
-  if (userError || companyError) {
-    console.error(userError || companyError);
-    redirect("/error");
+  if (!res || !comp) {
+    redirect("/login");
   }
 
   return (
@@ -24,7 +25,7 @@ export default async function Profile() {
           <CardTitle>{t("userTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <UserForm defaultValues={user as any} />
+          <UserForm name={res.user.name} />
         </CardContent>
       </Card>
       <Card id="company-card">
@@ -32,7 +33,7 @@ export default async function Profile() {
           <CardTitle>{t("companyTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <CompanyForm defaultValues={company as any} />
+          <CompanyForm defaultValues={comp} />
         </CardContent>
       </Card>
     </main>

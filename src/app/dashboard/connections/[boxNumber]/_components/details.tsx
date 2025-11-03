@@ -27,7 +27,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -58,15 +57,8 @@ import type { Payment } from "./types";
 import type { ConnectionUpdateSchema } from "./update-connection";
 import UpdateConnection from "./update-connection";
 
-export function Details({
-  currConnection,
-  currPayments,
-}: {
-  currConnection: Connection;
-  currPayments: Payment[];
-}) {
+export function Details({ currConnection }: { currConnection: Connection }) {
   const [connection, setConnection] = useState(currConnection);
-  const [payments, setPayments] = useState(currPayments);
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [markingAsPaid, setMarkingAsPaid] = useState(false);
   const [basePackOpen, setBasePackOpen] = useState(false);
@@ -74,6 +66,11 @@ export function Details({
   const [edit, setEdit] = useState(false);
   const [selectedPack, setSelectedPack] = useState<BasePack | undefined>();
   const { data } = useSWR<BasePack[]>("/api/packs", fetcher);
+  const {
+    data: payments = [],
+    isLoading: paymentsLoading,
+    mutate: mutatePayments,
+  } = useSWR<Payment[]>(`/api/payment?connectionId=${connection.id}`, fetcher);
 
   const paidThisMonth = connection.lastPayment
     ? isThisMonth(connection.lastPayment)
@@ -106,17 +103,16 @@ export function Details({
     } else {
       const newPayment: Payment = await res.json();
       setConnection({ ...connection, lastPayment: newPayment.date });
-      setPayments([newPayment, ...payments]);
+      mutatePayments([newPayment, ...payments]);
     }
   };
 
   const onPackSelect = (id: string) => {
     setBasePackOpen(false);
 
-    const packId = Number(id);
-    if (packId === connection.basePack.id) return;
+    if (id === connection.basePack.id) return;
 
-    setSelectedPack(data?.find((pack) => pack.id === packId));
+    setSelectedPack(data?.find((pack) => pack.id === id));
   };
 
   const migrate = async () => {
@@ -125,19 +121,12 @@ export function Details({
 
     const res = await fetch(
       `/api/migrate?connectionId=${connection.id}&to=${selectedPack.id}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      },
+      { method: "POST" },
     );
 
     if (res.ok) {
       const payment: Payment = await res.json();
-      if (paidThisMonth) {
-        setPayments(payments.map((p) => (p.id === payment.id ? payment : p)));
-      } else {
-        setPayments([payment, ...payments]);
-      }
+      mutatePayments([payment, ...payments]);
       setConnection({
         ...connection,
         // @ts-expect-error
@@ -146,12 +135,13 @@ export function Details({
       });
       setSelectedPack(undefined);
     } else {
-      toast.error("Something went wrong while migrating.");
+      const errors = await res.json();
+      toast.error(errors.message);
     }
     setMigrating(false);
   };
 
-  const deletePayment = async (id: number) => {
+  const deletePayment = async (id: string) => {
     const promise = fetch(`/api/payment?paymentId=${id}`, {
       method: "DELETE",
     });
@@ -162,10 +152,13 @@ export function Details({
       error: "Something went wrong while deleting the payment.",
     });
 
-    if ((await promise).ok) {
+    const res = await promise;
+
+    if (res.ok) {
+      mutatePayments(payments.filter((payment) => payment.id !== id));
+      // Update connection state based on the deleted payment
       const payment = payments.find((p) => p.id === id);
       const updatedPayments = payments.filter((p) => p.id !== id);
-      setPayments(updatedPayments);
       const lastPayment = updatedPayments[0];
       if (lastPayment) {
         setConnection({
@@ -177,9 +170,12 @@ export function Details({
         setConnection({
           ...connection,
           basePack: payment.currentPack,
-          lastPayment: undefined,
+          lastPayment: null,
         });
       }
+    } else {
+      const error = await res.json();
+      toast.error(error.message);
     }
   };
 
@@ -213,14 +209,11 @@ export function Details({
           <div className="flex items-center gap-2">
             <MapPin size={16} className="text-muted-foreground" />
             <span className="font-medium">{connection.area.name}</span>
-            <Badge variant="secondary" className="text-xs">
-              Area #{connection.area.id}
-            </Badge>
           </div>
 
           {/* Phone Number */}
           {connection.phoneNumber && (
-            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
                   <Phone
@@ -278,25 +271,27 @@ export function Details({
                     <CommandList>
                       <CommandEmpty>No base pack found.</CommandEmpty>
                       <CommandGroup>
-                        {(data ?? []).map((pack) => (
-                          <CommandItem
-                            key={pack.id}
-                            value={pack.id.toString()}
-                            onSelect={onPackSelect}
-                            className="flex items-center justify-between"
-                          >
-                            <div>
-                              <p className="font-medium">{pack.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                LCO: ₹{pack.lcoPrice} • MRP: ₹
-                                {pack.customerPrice}
-                              </p>
-                            </div>
-                            {connection.basePack.id === pack.id && (
-                              <Check size={16} className="text-primary" />
-                            )}
-                          </CommandItem>
-                        ))}
+                        {(data ?? [])
+                          .filter((pack) => pack.id !== connection.basePack.id)
+                          .map((pack) => (
+                            <CommandItem
+                              key={pack.id}
+                              value={pack.id.toString()}
+                              onSelect={onPackSelect}
+                              className="flex items-center justify-between"
+                            >
+                              <div>
+                                <p className="font-medium">{pack.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  LCO: ₹{pack.lcoPrice} • MRP: ₹
+                                  {pack.customerPrice}
+                                </p>
+                              </div>
+                              {connection.basePack.id === pack.id && (
+                                <Check size={16} className="text-primary" />
+                              )}
+                            </CommandItem>
+                          ))}
                       </CommandGroup>
                     </CommandList>
                   </Command>
@@ -333,7 +328,11 @@ export function Details({
           </Button>
         </CardFooter>
       </Card>
-      <PaymentsHistory payments={payments} deletePayment={deletePayment} />
+      <PaymentsHistory
+        payments={payments}
+        deletePayment={deletePayment}
+        loading={paymentsLoading}
+      />
       <AlertDialog
         open={selectedPack !== undefined}
         onOpenChange={() => setSelectedPack(undefined)}

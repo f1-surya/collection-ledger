@@ -12,7 +12,6 @@ import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,7 +27,7 @@ import type { Connection } from "./columns";
 interface Props {
   connection?: Connection;
   onOpenChange: Dispatch<SetStateAction<Connection | undefined>>;
-  callback: (connectionId: number) => void;
+  callback: (connectionId: string) => void;
 }
 
 export function ConnectionDetails({
@@ -102,9 +101,6 @@ export function ConnectionDetails({
           <div className="flex items-center gap-2 text-sm">
             <MapPin size={16} className="text-muted-foreground" />
             <span className="font-medium">{connection.area.name}</span>
-            <Badge variant="secondary" className="text-xs">
-              Area #{connection.area.id}
-            </Badge>
           </div>
 
           {/* Base Pack Information */}
@@ -119,7 +115,7 @@ export function ConnectionDetails({
           </div>
 
           {connection?.phoneNumber && (
-            <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+            <div className="border rounded-lg p-3 bg-linear-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">

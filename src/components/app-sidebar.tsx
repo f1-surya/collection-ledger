@@ -12,7 +12,6 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import useSwr from "swr";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -29,7 +28,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetcher } from "@/lib/fetcher";
+import { authClient } from "@/lib/auth-client";
 
 const links = [
   {
@@ -65,14 +64,9 @@ const links = [
 ];
 
 export function AppSidebar() {
-  const { isLoading: companyLoading, data: companyData } = useSwr(
-    "/api/company",
-    fetcher,
-  );
-  const { isLoading: userLoading, data: userData } = useSwr(
-    "/api/user",
-    fetcher,
-  );
+  const { data: companyData, isPending: companyLoading } =
+    authClient.useActiveOrganization();
+  const { data: userData, isPending: userLoading } = authClient.useSession();
   const t = useTranslations("Appbar");
   const pathname = usePathname();
   const { toggleSidebar } = useSidebar();
@@ -89,9 +83,9 @@ export function AppSidebar() {
             ) : (
               <>
                 <div className="flex flex-col">
-                  <h2 className="text-lg font-bold">{companyData.name}</h2>
+                  <h2 className="text-lg font-bold">{companyData?.name}</h2>
                   <p className="text-sm text-muted-foreground">
-                    {userData.email}
+                    {userData?.user?.email}
                   </p>
                 </div>
                 <ChevronRight />

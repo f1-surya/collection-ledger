@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Payment } from "./types";
 
 const PaymentCard = ({
@@ -18,7 +19,7 @@ const PaymentCard = ({
   deletePayment,
 }: {
   payment: Payment;
-  deletePayment: (id: number) => Promise<void>;
+  deletePayment: (id: string) => Promise<void>;
 }) => (
   <Card className="hover:shadow-md transition-shadow">
     <CardHeader>
@@ -64,9 +65,11 @@ const PaymentCard = ({
 export default function PaymentsHistory({
   payments,
   deletePayment,
+  loading,
 }: {
   payments: Payment[];
-  deletePayment: (id: number) => Promise<void>;
+  deletePayment: (id: string) => Promise<void>;
+  loading?: boolean;
 }) {
   const t = useTranslations("ConnectionPage");
 
@@ -78,16 +81,31 @@ export default function PaymentsHistory({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {payments.length === 0 && (
+        {loading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-full" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : payments.length === 0 ? (
           <p className="text-center">{t("noPayments")}</p>
+        ) : (
+          payments.map((payment) => (
+            <PaymentCard
+              key={payment.id}
+              payment={payment}
+              deletePayment={deletePayment}
+            />
+          ))
         )}
-        {payments.map((payment) => (
-          <PaymentCard
-            key={payment.id}
-            payment={payment}
-            deletePayment={deletePayment}
-          />
-        ))}
       </CardContent>
     </Card>
   );

@@ -1,29 +1,39 @@
-import { type NextRequest, NextResponse } from "next/server";
-import handleSession from "@/lib/handle-session";
+import { startOfMonth } from "date-fns";
+import { and, eq, gte, lte } from "drizzle-orm";
+import type { NextRequest } from "next/server";
+import { db } from "@/db/drizzle";
+import { connections, payments } from "@/db/schema";
+import { getOrg } from "@/lib/get-org";
+import { writeSheet } from "@/lib/sheet";
 
 export async function GET(req: NextRequest) {
-  const token = await handleSession();
-  const res = await fetch(
-    `${process.env.API_URL}/data-transfer/payments?${req.nextUrl.searchParams}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  );
+  const params = req.nextUrl.searchParams;
 
-  if (!res.ok) {
-    console.error("Failed to fetch data:", await res.text());
-    return NextResponse.json(
-      { error: "Failed to fetch data" },
-      { status: res.status },
-    );
-  }
+  const start = params.get("start");
+  const end = params.get("end");
+  const now = new Date();
+  const startDate = start ? new Date(start) : startOfMonth(now);
+  const endDate = end ? new Date(end) : now;
 
-  return new Response(await res.blob(), {
+  const org = await getOrg();
+  const data = await db
+    .select({ boxNumber: connections.boxNumber })
+    .from(payments)
+    .where(
+      and(
+        eq(payments.org, org.id),
+        gte(payments.date, startDate),
+        lte(payments.date, endDate),
+      ),
+    )
+    .rightJoin(connections, eq(payments.connection, connections.id));
+
+  const blob = writeSheet({ Payments: data.map((p) => [p.boxNumber]) });
+
+  return new Response(Buffer.from(blob), {
     headers: {
       "Content-Type":
-        res.headers.get("Content-Type") || "application/octet-stream",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     },
   });
 }
