@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "./auth";
 
-export async function getOrg() {
+export async function getOrg(currentPath?: string) {
   const h = await headers();
   const org = await auth.api.getFullOrganization({ headers: h });
   if (org) {
@@ -18,5 +18,8 @@ export async function getOrg() {
       return first;
     }
   }
-  redirect("/create-company");
+
+  if (currentPath !== "/create-company") {
+    redirect("/create-company");
+  }
 }
