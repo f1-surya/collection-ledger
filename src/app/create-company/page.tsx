@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { CreateCompanyForm } from "@/components/forms/company";
 import {
@@ -12,11 +11,7 @@ import { getOrg } from "@/lib/get-org";
 
 export default async function CreateCompany() {
   const t = await getTranslations("CreateCompany");
-
-  const org = await getOrg();
-  if (org) {
-    redirect("/dashboard");
-  }
+  await getOrg("/create-company");
 
   return (
     <main className="flex items-center justify-center h-dvh w-dvw">
