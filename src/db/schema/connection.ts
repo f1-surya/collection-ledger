@@ -35,24 +35,32 @@ export const basePacks = pgTable(
   (table) => [index("org_base_pack_index").on(table.org)],
 );
 
-export const connections = pgTable("connection", {
-  id: text().primaryKey(),
-  name: text().notNull(),
-  boxNumber: text().notNull().unique(),
-  phoneNumber: text(),
-  area: text()
-    .notNull()
-    .references(() => areas.id),
-  basePack: text()
-    .notNull()
-    .references(() => basePacks.id),
-  org: text()
-    .notNull()
-    .references(() => organization.id),
-  lastPayment: timestamp({ withTimezone: true }),
-  createdAt: timestamp().defaultNow(),
-  updateddAt: timestamp().defaultNow(),
-});
+export const connections = pgTable(
+  "connection",
+  {
+    id: text().primaryKey(),
+    name: text().notNull(),
+    boxNumber: text().notNull().unique(),
+    phoneNumber: text(),
+    area: text()
+      .notNull()
+      .references(() => areas.id),
+    basePack: text()
+      .notNull()
+      .references(() => basePacks.id),
+    org: text()
+      .notNull()
+      .references(() => organization.id),
+    lastPayment: timestamp({ withTimezone: true }),
+    createdAt: timestamp().defaultNow(),
+    updateddAt: timestamp().defaultNow(),
+  },
+  (table) => [
+    index("connection_org_index").on(table.org),
+    index("connection_id_index").on(table.id),
+    index("connection_boxNumber_index").on(table.boxNumber),
+  ],
+);
 
 export const connectionsRelations = relations(connections, ({ one }) => ({
   area: one(areas, {
@@ -87,6 +95,12 @@ export const payments = pgTable(
   (table) => [
     index("payments_date_index").on(table.date),
     index("payments_connection_index").on(table.connection),
+    index("payments_org_index").on(table.org),
+    index("payments_monthly_check_idx").on(
+      table.connection,
+      table.org,
+      table.date,
+    ),
   ],
 );
 

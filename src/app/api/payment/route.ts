@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    await db
+    await tx
       .update(connections)
       .set({ lastPayment: newPayments[0].date })
       .where(eq(connections.id, connection.id));
