@@ -79,22 +79,24 @@ export async function POST(req: NextRequest) {
   }
 
   const data = await db.transaction(async (tx) => {
-    const newPayments = await tx
-      .insert(payments)
-      .values({
-        id: nanoid(),
-        connection: connectionId,
-        currentPack: connection.basePack.id,
-        org: org.id,
-        lcoPrice: connection.basePack.lcoPrice,
-        customerPrice: connection.basePack.customerPrice,
-      })
-      .returning();
-
-    await tx
-      .update(connections)
-      .set({ lastPayment: newPayments[0].date })
-      .where(eq(connections.id, connection.id));
+    const [newPayments] = await Promise.all([
+      tx
+        .insert(payments)
+        .values({
+          id: nanoid(),
+          connection: connectionId,
+          currentPack: connection.basePack.id,
+          org: org.id,
+          lcoPrice: connection.basePack.lcoPrice,
+          customerPrice: connection.basePack.customerPrice,
+          date: now,
+        })
+        .returning(),
+      tx
+        .update(connections)
+        .set({ lastPayment: now })
+        .where(eq(connections.id, connection.id)),
+    ]);
 
     return newPayments[0];
   });

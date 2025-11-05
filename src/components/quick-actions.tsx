@@ -1,12 +1,16 @@
 "use client";
 
 import { Download, Plus } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import CreateConnection from "@/app/dashboard/connections/_components/create";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+
+const CreateConnection = dynamic(
+  () => import("@/app/dashboard/connections/_components/create"),
+);
 
 export function QuickActions() {
   const [boxNumber, setBoxNumber] = useState("");

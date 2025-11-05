@@ -9,6 +9,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Plus } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,8 +22,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Connection } from "./columns";
-import { ConnectionDetails } from "./connection-details";
-import CreateConnection from "./create";
+
+const CreateConnection = dynamic(
+  () => import("@/app/dashboard/connections/_components/create"),
+);
+const ConnectionDetails = dynamic(() => import("./connection-details"));
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

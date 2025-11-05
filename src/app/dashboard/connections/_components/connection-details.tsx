@@ -30,7 +30,7 @@ interface Props {
   callback: (connectionId: string) => void;
 }
 
-export function ConnectionDetails({
+export default function ConnectionDetails({
   connection,
   onOpenChange,
   callback,
