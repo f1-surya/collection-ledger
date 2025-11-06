@@ -97,7 +97,7 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
                 name="area"
                 label="Area"
                 placeHolder="Select an area"
-                items={areas}
+                items={areas ?? []}
                 required
               />
               <CustomSelect
@@ -105,7 +105,7 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
                 name="basePack"
                 label="Base pack"
                 placeHolder="Select a base pack"
-                items={basePacks}
+                items={basePacks ?? []}
                 required
               />
             </div>
