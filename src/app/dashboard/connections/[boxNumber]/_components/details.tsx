@@ -2,7 +2,6 @@
 
 import { format, isThisMonth } from "date-fns";
 import {
-  AlertCircle,
   Calendar,
   Check,
   Copy,
@@ -12,21 +11,12 @@ import {
   Phone,
   UserPen,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import type { Area } from "@/app/dashboard/areas/_components/areas";
 import type { BasePack } from "@/app/dashboard/base-packs/_components/types";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -55,7 +45,9 @@ import type { Connection } from "../../_components/columns";
 import PaymentsHistory from "./payments";
 import type { Payment } from "./types";
 import type { ConnectionUpdateSchema } from "./update-connection";
-import UpdateConnection from "./update-connection";
+
+const UpdateConnection = dynamic(() => import("./update-connection"));
+const MigrationDialog = dynamic(() => import("./migration-dialog"));
 
 export function Details({ currConnection }: { currConnection: Connection }) {
   const [connection, setConnection] = useState(currConnection);
@@ -333,73 +325,13 @@ export function Details({ currConnection }: { currConnection: Connection }) {
         deletePayment={deletePayment}
         loading={paymentsLoading}
       />
-      <AlertDialog
-        open={selectedPack !== undefined}
-        onOpenChange={() => setSelectedPack(undefined)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertCircle size={20} className="text-amber-500" />
-              Confirm Base Pack Migration
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-3">
-              Are you sure you want to change the base pack for{" "}
-              <strong>{connection.name}</strong>?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="p-3 bg-muted rounded-lg space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">From:</span>
-              <span className="font-medium">{connection.basePack.name}</span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">To:</span>
-              <span className="font-medium text-primary">
-                {selectedPack?.name}
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="p-2 bg-red-50 dark:bg-red-950/20 rounded border">
-              <p className="font-medium text-red-700 dark:text-red-300 mb-1">
-                Current Pack
-              </p>
-              <p className="text-xs">LCO: ₹{connection.basePack.lcoPrice}</p>
-              <p className="text-xs">
-                MRP: ₹{connection.basePack.customerPrice}
-              </p>
-            </div>
-            <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded border">
-              <p className="font-medium text-green-700 dark:text-green-300 mb-1">
-                New Pack
-              </p>
-              <p className="text-xs">LCO: ₹{selectedPack?.lcoPrice}</p>
-              <p className="text-xs">MRP: ₹{selectedPack?.customerPrice}</p>
-            </div>
-          </div>
-
-          <p className="text-xs text-muted-foreground">
-            This action will create a migration record and update the customer's
-            billing.
-          </p>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={migrate}
-              className="bg-primary"
-              disabled={migrating}
-            >
-              {migrating ? (
-                <LoaderCircle className="animate-spin" />
-              ) : (
-                "Confirm migration"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <MigrationDialog
+        selectedPack={selectedPack}
+        setSelectedPack={setSelectedPack}
+        connection={connection}
+        migrate={migrate}
+        migrating={migrating}
+      />
       <UpdateConnection
         open={edit}
         onOpenChange={setEdit}

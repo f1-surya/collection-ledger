@@ -48,7 +48,7 @@ export const columns: ColumnDef<Connection>[] = [
       const lastPayment = row.getValue("lastPayment");
       if (!lastPayment) return "Nil";
 
-      return format(lastPayment as string, "dd MMM yyyy");
+      return format(lastPayment as Date, "dd MMM yyyy");
     },
   },
 ];

@@ -4,7 +4,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import z from "zod";
 import { db } from "@/db/drizzle";
 import { areas, connections } from "@/db/schema";
-import { getAreas } from "@/lib/area";
 import { getOrg } from "@/lib/get-org";
 
 const areaSchema = z.object({
@@ -16,8 +15,13 @@ const areaSchema = z.object({
 });
 
 export async function GET() {
-  const areas = await getAreas();
-  return NextResponse.json(areas);
+  const org = await getOrg();
+
+  const currAreas = await db.query.areas.findMany({
+    where: eq(areas.org, org.id),
+  });
+
+  return NextResponse.json(currAreas);
 }
 
 export async function POST(req: NextRequest) {

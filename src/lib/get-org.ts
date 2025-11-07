@@ -4,6 +4,13 @@ import { auth } from "./auth";
 
 export async function getOrg() {
   const h = await headers();
+  const session = await auth.api.getSession({ headers: h });
+  const orgId = session?.session.activeOrganizationId;
+
+  if (orgId) {
+    return { id: orgId };
+  }
+
   const org = await auth.api.getFullOrganization({ headers: h });
   if (org) {
     return org;

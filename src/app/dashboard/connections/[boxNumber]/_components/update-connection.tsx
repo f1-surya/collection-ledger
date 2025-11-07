@@ -110,8 +110,7 @@ export default function UpdateConnection({
                 name="area"
                 label="Area"
                 placeHolder="Select an area"
-                // @ts-expect-error
-                items={areas}
+                items={areas ?? []}
                 required
               />
             </div>
