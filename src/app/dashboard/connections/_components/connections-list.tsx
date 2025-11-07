@@ -1,6 +1,7 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { useCallback, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -15,8 +16,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Connection } from "./columns";
-import { ConnectionDetails } from "./connection-details";
-import CreateConnection from "./create";
+
+const CreateConnection = dynamic(
+  () => import("@/app/dashboard/connections/_components/create"),
+);
+const ConnectionDetails = dynamic(() => import("./connection-details"));
 
 const ConnectionCard = ({
   connection,

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  type ColumnDef,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -9,6 +8,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { Plus } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,19 +20,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Connection } from "./columns";
-import { ConnectionDetails } from "./connection-details";
-import CreateConnection from "./create";
+import { type Connection, columns } from "./columns";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+const CreateConnection = dynamic(
+  () => import("@/app/dashboard/connections/_components/create"),
+);
+const ConnectionDetails = dynamic(() => import("./connection-details"));
+
+interface DataTableProps {
+  data: Connection[];
 }
 
-export function ConnectionTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+export default function ConnectionTable({ data }: DataTableProps) {
   const [connections, setConnections] = useState(data);
   const [currConnection, setCurrConnection] = useState<
     Connection | undefined
@@ -58,7 +57,6 @@ export function ConnectionTable<TData, TValue>({
   const markAsPaid = (connectionId: string) => {
     setConnections((prevCons) =>
       prevCons.map((con) =>
-        // @ts-expect-error
         con.id === connectionId ? { ...con, lastPayment: new Date() } : con,
       ),
     );
