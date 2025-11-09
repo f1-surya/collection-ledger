@@ -4,14 +4,14 @@ import {
   LoadingRecentPayments,
   RecentPayments,
 } from "./_components/recent-payments";
-import { LoadingSummary, Summary } from "./_components/summary";
+import { Summary, SummarySkeleton } from "./_components/summary";
 
 export default async function Dashboard() {
   return (
     <div className="p-4 space-y-6">
       <h1 className="text-3xl font-bold">Dashboard</h1>
       <QuickActions />
-      <Suspense fallback={<LoadingSummary />}>
+      <Suspense fallback={<SummarySkeleton />}>
         <Summary />
       </Suspense>
       <Suspense fallback={<LoadingRecentPayments />}>
