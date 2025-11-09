@@ -7,11 +7,11 @@ import { db } from "@/db/drizzle";
 import { connections, payments } from "@/db/schema";
 import { getOrg } from "@/lib/get-org";
 
-export function LoadingSummary() {
+export function SummarySkeleton() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={`summary-card-${i}`}>
+      {Array.from({ length: 4 }).map(() => (
+        <Card key={`summary-card-${Math.random()}`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               <Skeleton className="h-4 w-24" />

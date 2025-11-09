@@ -43,7 +43,13 @@ export function LoginForm() {
     <form onSubmit={onSubmit} className="space-y-4 text-start">
       <Field>
         <FieldLabel htmlFor="email">Email:</FieldLabel>
-        <Input id="email" name="email" placeholder="rick@dalton.com" type='email' required />
+        <Input
+          id="email"
+          name="email"
+          placeholder="rick@dalton.com"
+          type="email"
+          required
+        />
       </Field>
       <Field>
         <FieldLabel htmlFor="password">Password:</FieldLabel>

@@ -2,8 +2,11 @@
 
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
+import MyPagination from "@/components/my-pagination";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -66,28 +69,17 @@ const ConnectionCard = ({
 
 export default function ConnectionsList({
   connections: data,
+  pages,
 }: {
   connections: Connection[];
+  pages: number;
 }) {
   const [connections, setConnections] = useState(data);
-  const [search, setSearch] = useState("");
   const [newConnection, setNewConnection] = useState(false);
   const [currConnection, setCurrConnection] = useState<
     Connection | undefined
   >();
   const now = useMemo(() => new Date(), []);
-  const filtered = useMemo(() => {
-    if (search.length === 0) {
-      return connections;
-    }
-
-    const searchString = search.toUpperCase();
-    return connections.filter(
-      (connection) =>
-        connection.name.includes(searchString) ||
-        connection.boxNumber.includes(searchString),
-    );
-  }, [search, connections]);
   const showConnection = useCallback(
     (connectionId: string) => {
       const found = connections.find((con) => con.id === connectionId);
@@ -96,6 +88,22 @@ export default function ConnectionsList({
     [connections],
   );
   const t = useTranslations("Connections");
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+  const handleSearch = useDebouncedCallback((term) => {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set("search", term);
+    } else {
+      params.delete("search");
+    }
+    replace(`${pathname}?${params.toString()}`);
+  }, 300);
+
+  useEffect(() => {
+    setConnections(data);
+  }, [data]);
 
   const markAsPaid = (connectionId: string) => {
     setConnections((prevCons) =>
@@ -113,14 +121,14 @@ export default function ConnectionsList({
       ) : (
         <>
           <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
             type="search"
             placeholder="Enter name or smartcard"
+            defaultValue={searchParams.get("search")?.toString()}
+            onChange={(e) => handleSearch(e.target.value)}
           />
           <ScrollArea className="h-[87dvh]">
             <div className="flex flex-col space-y-2">
-              {filtered.map((connection) => (
+              {connections.map((connection) => (
                 <ConnectionCard
                   key={connection.id}
                   connection={connection}
@@ -145,6 +153,7 @@ export default function ConnectionsList({
         onOpenChange={setCurrConnection}
         callback={markAsPaid}
       />
+      <MyPagination pages={pages} />
     </div>
   );
 }

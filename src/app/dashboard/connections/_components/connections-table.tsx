@@ -9,7 +9,10 @@ import {
 } from "@tanstack/react-table";
 import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
+import MyPagination from "@/components/my-pagination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,30 +32,43 @@ const ConnectionDetails = dynamic(() => import("./connection-details"));
 
 interface DataTableProps {
   data: Connection[];
+  pages: number;
 }
 
-export default function ConnectionTable({ data }: DataTableProps) {
+export default function ConnectionTable({ data, pages }: DataTableProps) {
   const [connections, setConnections] = useState(data);
   const [currConnection, setCurrConnection] = useState<
     Connection | undefined
   >();
   const [newConnection, setNewConnection] = useState(false);
-  const [globalFilter, setGlobalFilter] = useState("");
   const table = useReactTable({
     data: connections,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      globalFilter,
-    },
     initialState: {
       pagination: {
-        pageSize: 15,
+        pageSize: 20,
       },
     },
     getPaginationRowModel: getPaginationRowModel(),
   });
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+  const handleSearch = useDebouncedCallback((term) => {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set("search", term);
+    } else {
+      params.delete("search");
+    }
+    replace(`${pathname}?${params.toString()}`);
+  }, 300);
+
+  useEffect(() => {
+    setConnections(data);
+  }, [data]);
 
   const markAsPaid = (connectionId: string) => {
     setConnections((prevCons) =>
@@ -69,8 +85,8 @@ export default function ConnectionTable({ data }: DataTableProps) {
         <Input
           placeholder="Search by name or SMC"
           type="search"
-          value={globalFilter}
-          onChange={(event) => setGlobalFilter(String(event.target.value))}
+          defaultValue={searchParams.get("search")?.toString()}
+          onChange={(event) => handleSearch(event.target.value)}
           className="max-w-sm"
         />
         <Button
@@ -80,7 +96,7 @@ export default function ConnectionTable({ data }: DataTableProps) {
           <Plus />
         </Button>
       </div>
-      <div className="overflow-hidden rounded-md border">
+      <div className="overflow-hidden rounded-md border mb-4">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -128,24 +144,7 @@ export default function ConnectionTable({ data }: DataTableProps) {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div>
+      <MyPagination pages={pages} />
       <CreateConnection open={newConnection} onOpenChange={setNewConnection} />
       <ConnectionDetails
         connection={currConnection}
