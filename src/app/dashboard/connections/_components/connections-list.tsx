@@ -1,7 +1,9 @@
 "use client";
 
+import { TvMinimal } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import MyPagination from "@/components/my-pagination";
@@ -13,9 +15,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Connection } from "./columns";
+import CreateConnection from "./create";
 
 const ConnectionDetails = dynamic(() => import("./connection-details"));
 
@@ -92,6 +100,7 @@ export default function ConnectionsList({
     }
     replace(`${pathname}?${params.toString()}`);
   }, 250);
+  const t = useTranslations("Connections");
 
   useEffect(() => {
     setConnections(data);
@@ -114,7 +123,17 @@ export default function ConnectionsList({
         defaultValue={searchParams.get("search")?.toString()}
         onChange={(e) => handleSearch(e.target.value)}
       />
-      <ScrollArea className="h-[87dvh]">
+      {connections.length === 0 ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia>
+              <TvMinimal />
+            </EmptyMedia>
+            <EmptyTitle>{t("noConnectionsForQuery")}</EmptyTitle>
+          </EmptyHeader>
+          <CreateConnection />
+        </Empty>
+      ) : (
         <div className="flex flex-col space-y-2">
           {connections.map((connection) => (
             <ConnectionCard
@@ -125,7 +144,7 @@ export default function ConnectionsList({
             />
           ))}
         </div>
-      </ScrollArea>
+      )}
       <ConnectionDetails
         connection={currConnection}
         onOpenChange={setCurrConnection}
