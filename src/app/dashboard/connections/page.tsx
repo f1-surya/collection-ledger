@@ -38,7 +38,7 @@ export default async function ConnectionsPage({
 
   const count = await db.$count(connections, filter);
 
-  if (count === 0) {
+  if (count === 0 && !(page || searchParams)) {
     return (
       <Empty>
         <EmptyHeader>
@@ -54,6 +54,11 @@ export default async function ConnectionsPage({
 
   const maxPages = Math.ceil(count / 20);
 
+  let currPage = Math.min(page ?? 1, maxPages) - 1;
+  if (currPage < 0) {
+    currPage = 0;
+  }
+
   const conns = await db.query.connections.findMany({
     where: filter,
     with: {
@@ -62,7 +67,7 @@ export default async function ConnectionsPage({
     },
     orderBy: connections.name,
     limit: 20,
-    offset: (Math.min(page ?? 1, maxPages) - 1) * 20,
+    offset: currPage * 20,
   });
 
   return (
