@@ -14,7 +14,6 @@ const CreateConnection = dynamic(
 
 export function QuickActions() {
   const [boxNumber, setBoxNumber] = useState("");
-  const [newConnection, setNewConnection] = useState(false);
   const router = useRouter();
 
   return (
@@ -25,10 +24,12 @@ export function QuickActions() {
       <CardContent>
         <div className="space-y-4">
           <div className="flex flex-wrap gap-4">
-            <Button onClick={() => setNewConnection(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add New Connection
-            </Button>
+            <CreateConnection>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add New Connection
+              </Button>
+            </CreateConnection>
             <Button variant="outline" asChild>
               <a href="/api/payment/sheet" download>
                 <Download className="mr-2 h-4 w-4" />
@@ -52,7 +53,6 @@ export function QuickActions() {
           </div>
         </div>
       </CardContent>
-      <CreateConnection open={newConnection} onOpenChange={setNewConnection} />
     </Card>
   );
 }

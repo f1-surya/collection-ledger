@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 import useSWR from "swr";
 import type z from "zod";
@@ -26,7 +26,11 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { fetcher } from "@/lib/fetcher";
 import { connectionSchema } from "@/lib/zod-stuff";
 
-export default function CreateConnection() {
+export default function CreateConnection({
+  children,
+}: {
+  children?: ReactNode;
+}) {
   const [saving, setSaving] = useState(false);
   const form = useForm<z.infer<typeof connectionSchema>>({
     resolver: zodResolver(connectionSchema),
@@ -61,9 +65,13 @@ export default function CreateConnection() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button className="fixed right-0 bottom-0 m-6 w-14 h-14" size="icon">
-          <Plus />
-        </Button>
+        {children ? (
+          children
+        ) : (
+          <Button className="fixed right-0 bottom-0 m-6 w-14 h-14" size="icon">
+            <Plus />
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent side={isMobile ? "bottom" : "right"}>
         <form onSubmit={form.handleSubmit(save)}>
