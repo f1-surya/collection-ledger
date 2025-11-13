@@ -15,6 +15,9 @@ import type { Connection } from "./columns";
 
 const ConnectionsList = dynamic(() => import("./connections-list"));
 const ConnectionsTable = dynamic(() => import("./connections-table"));
+const CreateConnection = dynamic(
+  () => import("@/app/dashboard/connections/_components/create"),
+);
 
 export function ConnectionsSkeleton() {
   return (
@@ -53,9 +56,14 @@ export default function Connections({
 }) {
   const isMobile = useIsMobile();
 
-  if (isMobile) {
-    return <ConnectionsList connections={connections} pages={pages} />;
-  }
-
-  return <ConnectionsTable data={connections} pages={pages} />;
+  return (
+    <>
+      {isMobile ? (
+        <ConnectionsList connections={connections} pages={pages} />
+      ) : (
+        <ConnectionsTable data={connections} pages={pages} />
+      )}
+      <CreateConnection />
+    </>
+  );
 }

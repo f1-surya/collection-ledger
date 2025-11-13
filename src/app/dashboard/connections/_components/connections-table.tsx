@@ -7,13 +7,11 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import MyPagination from "@/components/my-pagination";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -25,9 +23,6 @@ import {
 } from "@/components/ui/table";
 import { type Connection, columns } from "./columns";
 
-const CreateConnection = dynamic(
-  () => import("@/app/dashboard/connections/_components/create"),
-);
 const ConnectionDetails = dynamic(() => import("./connection-details"));
 
 interface DataTableProps {
@@ -40,7 +35,6 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
   const [currConnection, setCurrConnection] = useState<
     Connection | undefined
   >();
-  const [newConnection, setNewConnection] = useState(false);
   const table = useReactTable({
     data: connections,
     columns,
@@ -64,7 +58,7 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
       params.delete("search");
     }
     replace(`${pathname}?${params.toString()}`);
-  }, 300);
+  }, 250);
 
   useEffect(() => {
     setConnections(data);
@@ -89,12 +83,6 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
           onChange={(event) => handleSearch(event.target.value)}
           className="max-w-sm"
         />
-        <Button
-          className="w-18"
-          onClick={() => setNewConnection(!newConnection)}
-        >
-          <Plus />
-        </Button>
       </div>
       <div className="overflow-hidden rounded-md border mb-4">
         <Table>
@@ -115,37 +103,22 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  onClick={() => setCurrConnection(row.original as Connection)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                onClick={() => setCurrConnection(row.original as Connection)}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
               </TableRow>
-            )}
+            ))}
           </TableBody>
         </Table>
       </div>
       <MyPagination pages={pages} />
-      <CreateConnection open={newConnection} onOpenChange={setNewConnection} />
       <ConnectionDetails
         connection={currConnection}
         onOpenChange={setCurrConnection}
