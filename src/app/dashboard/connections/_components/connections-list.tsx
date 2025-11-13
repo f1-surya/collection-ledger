@@ -1,13 +1,10 @@
 "use client";
 
-import { Plus } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import MyPagination from "@/components/my-pagination";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -20,9 +17,6 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Connection } from "./columns";
 
-const CreateConnection = dynamic(
-  () => import("@/app/dashboard/connections/_components/create"),
-);
 const ConnectionDetails = dynamic(() => import("./connection-details"));
 
 const ConnectionCard = ({
@@ -75,7 +69,6 @@ export default function ConnectionsList({
   pages: number;
 }) {
   const [connections, setConnections] = useState(data);
-  const [newConnection, setNewConnection] = useState(false);
   const [currConnection, setCurrConnection] = useState<
     Connection | undefined
   >();
@@ -87,7 +80,6 @@ export default function ConnectionsList({
     },
     [connections],
   );
-  const t = useTranslations("Connections");
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
@@ -99,7 +91,7 @@ export default function ConnectionsList({
       params.delete("search");
     }
     replace(`${pathname}?${params.toString()}`);
-  }, 300);
+  }, 250);
 
   useEffect(() => {
     setConnections(data);
@@ -116,38 +108,24 @@ export default function ConnectionsList({
 
   return (
     <div className="space-y-4">
-      {connections.length === 0 ? (
-        <div className="text-center">{t("noConnections")}</div>
-      ) : (
-        <>
-          <Input
-            type="search"
-            placeholder="Enter name or smartcard"
-            defaultValue={searchParams.get("search")?.toString()}
-            onChange={(e) => handleSearch(e.target.value)}
-          />
-          <ScrollArea className="h-[87dvh]">
-            <div className="flex flex-col space-y-2">
-              {connections.map((connection) => (
-                <ConnectionCard
-                  key={connection.id}
-                  connection={connection}
-                  now={now}
-                  onClick={showConnection}
-                />
-              ))}
-            </div>
-          </ScrollArea>
-        </>
-      )}
-      <Button
-        className="absolute right-0 bottom-0 m-6 w-14 h-14"
-        size="icon"
-        onClick={() => setNewConnection(!newConnection)}
-      >
-        <Plus />
-      </Button>
-      <CreateConnection open={newConnection} onOpenChange={setNewConnection} />
+      <Input
+        type="search"
+        placeholder="Enter name or smartcard"
+        defaultValue={searchParams.get("search")?.toString()}
+        onChange={(e) => handleSearch(e.target.value)}
+      />
+      <ScrollArea className="h-[87dvh]">
+        <div className="flex flex-col space-y-2">
+          {connections.map((connection) => (
+            <ConnectionCard
+              key={connection.id}
+              connection={connection}
+              now={now}
+              onClick={showConnection}
+            />
+          ))}
+        </div>
+      </ScrollArea>
       <ConnectionDetails
         connection={currConnection}
         onOpenChange={setCurrConnection}

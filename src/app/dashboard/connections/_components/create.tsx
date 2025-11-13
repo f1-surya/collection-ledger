@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -18,18 +19,14 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { fetcher } from "@/lib/fetcher";
 import { connectionSchema } from "@/lib/zod-stuff";
 
-interface Props {
-  open: boolean;
-  onOpenChange: (state: boolean) => void;
-}
-
-export default function CreateConnection({ open, onOpenChange }: Props) {
+export default function CreateConnection() {
   const [saving, setSaving] = useState(false);
   const form = useForm<z.infer<typeof connectionSchema>>({
     resolver: zodResolver(connectionSchema),
@@ -62,7 +59,12 @@ export default function CreateConnection({ open, onOpenChange }: Props) {
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button className="fixed right-0 bottom-0 m-6 w-14 h-14" size="icon">
+          <Plus />
+        </Button>
+      </SheetTrigger>
       <SheetContent side={isMobile ? "bottom" : "right"}>
         <form onSubmit={form.handleSubmit(save)}>
           <SheetHeader>
