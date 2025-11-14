@@ -1,12 +1,10 @@
 "use client";
 
-import { format, startOfMonth } from "date-fns";
-import { ArrowRight, Download, HardDriveUpload, Search } from "lucide-react";
+import { format, startOfYear } from "date-fns";
+import { ArrowRight, Download, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo } from "react";
-import type { DateRange } from "react-day-picker";
+import MyPagination from "@/components/my-pagination";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -14,80 +12,53 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { MonthPicker } from "@/components/ui/month-picker";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Toggle } from "@/components/ui/toggle";
 import type { Payment } from "../../connections/[boxNumber]/_components/types";
 
 export default function PaymentList({
-  defaultPayments,
+  payments,
+  pages,
 }: {
-  defaultPayments: Payment[];
+  payments: Payment[];
+  pages: number;
 }) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const filteredPayments = useMemo(() => {
-    return defaultPayments.filter(
-      (payment) =>
-        payment.isMigration === (searchParams.get("migration") === "true"),
-    );
-  }, [searchParams, defaultPayments]);
 
   const formatCurrency = (amount: number) => {
     return `₹${amount.toLocaleString()}`;
   };
 
-  const updateSearchParams = useCallback(
-    (updates: Record<string, boolean | string>) => {
-      const params = new URLSearchParams(searchParams.toString());
-
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value || typeof value === "boolean") {
-          params.set(key, value.toString());
-        } else {
-          params.delete(key);
-        }
-      });
-
-      router.push(`?${params.toString()}`);
-    },
-    [searchParams, router],
-  );
-
-  const startDate = searchParams.get("start");
-  const endDate = searchParams.get("end");
-
-  const formatDates = () => {
-    if (!startDate || !endDate) {
-      return "Pick 2 dates";
-    }
-
-    return `${format(startDate, "dd MMM yy")} - ${format(endDate, "dd MMM yy")}`;
+  const changeMonth = (date: Date) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("month", date.toISOString());
+    router.replace(`/dashboard/payments-history?${params}`);
   };
 
-  const changeDates = (range?: DateRange) => {
-    if (!range?.from || !range?.to) return;
-    updateSearchParams({
-      start: range.from.toISOString(),
-      end: range.to.toISOString(),
-    });
+  const changePaymentType = (val: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (val === "all") {
+      params.delete("type");
+    } else {
+      params.set("type", val);
+    }
+    router.replace(`/dashboard/payments-history?${params}`);
   };
 
   const downloadPayments = async () => {
-    const params = new URLSearchParams({
-      start: startDate ?? startOfMonth(new Date()).toISOString(),
-      end: endDate ?? new Date().toISOString(),
-    });
+    const currentMonth = month ?? new Date().toISOString();
+    const params = new URLSearchParams({ month: currentMonth });
 
     const response = await fetch(`/api/payment/sheet?${params}`, {
-      headers: {
-        "Content-Type":
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      },
+      headers: { "Content-Type": "text/csv" },
     });
 
     if (!response.ok) {
@@ -98,43 +69,36 @@ export default function PaymentList({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "payments.xlsx";
+    a.download = `${format(currentMonth, "MMM-yyyy")}-payments.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  const month = searchParams.get("month");
 
   return (
     <main className="p-4">
       <div className="flex items-center justify-between gap-1 py-2">
         <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="secondary" size="sm">
-                {formatDates()}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 m-4">
-              <Calendar
-                mode="range"
-                selected={{
-                  from: startDate
-                    ? new Date(startDate)
-                    : startOfMonth(new Date()),
-                  to: endDate ? new Date(endDate) : new Date(),
-                }}
-                onSelect={changeDates}
-                disabled={{ after: new Date() }}
-              />
-            </PopoverContent>
-          </Popover>
-          <Toggle
-            variant="outline"
-            size="sm"
-            pressed={searchParams.get("migration") === "true"}
-            onPressedChange={(val) => updateSearchParams({ migration: val })}
+          <MonthPicker
+            value={month ? new Date(month) : new Date()}
+            onChange={changeMonth}
+            min={startOfYear(new Date())}
+            max={new Date()}
+          />
+          <Select
+            value={searchParams.get("type")?.toString() ?? "all"}
+            onValueChange={changePaymentType}
           >
-            <HardDriveUpload />
-          </Toggle>
+            <SelectTrigger size="sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All payments</SelectItem>
+              <SelectItem value="payments">Payments</SelectItem>
+              <SelectItem value="migrations">Migrations</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -150,7 +114,7 @@ export default function PaymentList({
         </DropdownMenu>
       </div>
       <div className="space-y-2">
-        {filteredPayments.length === 0 ? (
+        {payments.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-8">
               <Search className="h-8 w-8 text-muted-foreground mb-2" />
@@ -161,7 +125,7 @@ export default function PaymentList({
             </CardContent>
           </Card>
         ) : (
-          filteredPayments.map((payment, i) => (
+          payments.map((payment, i) => (
             <div key={payment.id}>
               <div className="flex flex-row justify-between p-1">
                 <div>
@@ -187,13 +151,12 @@ export default function PaymentList({
                   MRP: {formatCurrency(payment.customerPrice)}
                 </div>
               </div>
-              {filteredPayments.length - 1 !== i && (
-                <Separator className="w-full" />
-              )}
+              {payments.length - 1 !== i && <Separator className="w-full" />}
             </div>
           ))
         )}
       </div>
+      <MyPagination pages={pages} />
     </main>
   );
 }

@@ -19,3 +19,7 @@ export function writeSheet(data: { [key: string]: string[][] }) {
 
   return write(workbook, { type: "buffer", bookType: "xlsx" });
 }
+
+export function writeCsv(rows: string[][]) {
+  return rows.map((row) => row.join(",")).join("\n");
+}
