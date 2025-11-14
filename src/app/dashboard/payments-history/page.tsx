@@ -1,5 +1,5 @@
-import { startOfMonth } from "date-fns";
-import { and, eq, gte, lte } from "drizzle-orm";
+import { endOfMonth, startOfMonth } from "date-fns";
+import { and, between, eq, type SQLWrapper } from "drizzle-orm";
 import { db } from "@/db/drizzle";
 import { payments } from "@/db/schema";
 import { getOrg } from "@/lib/get-org";
@@ -8,27 +8,44 @@ import PaymentList from "./_components/payment-list";
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ start?: string; end?: string }>;
+  searchParams: Promise<{
+    month?: string;
+    page?: number;
+    type?: "all" | "payments" | "migrations";
+  }>;
 }) {
-  const { start, end } = await searchParams;
-  const now = new Date();
-  const startDate = start ? new Date(start) : startOfMonth(now);
-  const endDate = end ? new Date(end) : now;
-
-  if (startDate > endDate) {
-    return (
-      <main className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-2xl font-bold">Invalid Date Range</h1>
-      </main>
-    );
-  }
+  const { month: monthParam, page, type } = await searchParams;
+  const month = monthParam ? new Date(monthParam) : new Date();
 
   const org = await getOrg();
+
+  let typeFilter: SQLWrapper | undefined;
+  if (type === "migrations") {
+    typeFilter = eq(payments.isMigration, true);
+  } else if (type === "payments") {
+    typeFilter = eq(payments.isMigration, false);
+  }
+
+  const count = await db.$count(
+    payments,
+    and(
+      eq(payments.org, org.id),
+      between(payments.date, startOfMonth(month), endOfMonth(month)),
+      typeFilter,
+    ),
+  );
+  const maxPages = Math.ceil(count / 20);
+
+  let currPage = Math.min(page ?? 1, maxPages) - 1;
+  if (currPage < 0) {
+    currPage = 0;
+  }
+
   const data = await db.query.payments.findMany({
     where: and(
       eq(payments.org, org.id),
-      gte(payments.date, startDate),
-      lte(payments.date, endDate),
+      between(payments.date, startOfMonth(month), endOfMonth(month)),
+      typeFilter,
     ),
     with: {
       currentPack: true,
@@ -39,7 +56,9 @@ export default async function Page({
         },
       },
     },
+    limit: 20,
+    offset: currPage * 20,
   });
 
-  return <PaymentList defaultPayments={data} />;
+  return <PaymentList payments={data} pages={Math.ceil(count / 20)} />;
 }
