@@ -6,12 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import MyPagination from "@/components/my-pagination";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { MonthPicker } from "@/components/ui/month-picker";
 import {
   Select,
@@ -58,7 +52,7 @@ export default function PaymentList({
     const params = new URLSearchParams({ month: currentMonth });
 
     const response = await fetch(`/api/payment/sheet?${params}`, {
-      headers: { "Content-Type": "text/csv" },
+      headers: { "Content-Type": "application/zip" },
     });
 
     if (!response.ok) {
@@ -69,7 +63,7 @@ export default function PaymentList({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${format(currentMonth, "MMM-yyyy")}-payments.csv`;
+    a.download = `${format(currentMonth, "MMM-yyyy")}-lists.zip`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -100,18 +94,9 @@ export default function PaymentList({
             </SelectContent>
           </Select>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm">
-              <Download /> Download
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={downloadPayments}>
-              Download Payments
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button size="sm" onClick={downloadPayments}>
+          <Download /> Download lists
+        </Button>
       </div>
       <div className="space-y-2">
         {payments.length === 0 ? (
