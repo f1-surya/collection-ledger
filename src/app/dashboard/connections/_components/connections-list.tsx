@@ -1,20 +1,13 @@
 "use client";
 
-import { TvMinimal } from "lucide-react";
+import { isThisMonth } from "date-fns";
+import { CircleCheckBig, CircleX, HelpCircle, TvMinimal } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import MyPagination from "@/components/my-pagination";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Empty,
   EmptyHeader,
@@ -22,18 +15,39 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
 import type { Connection } from "./columns";
 import CreateConnection from "./create";
 
 const ConnectionDetails = dynamic(() => import("./connection-details"));
 
+const ConnectionStatus = ({ lastPayment }: { lastPayment: Date | null }) => {
+  let icon: ReactNode;
+  let color: string;
+  if (!lastPayment) {
+    icon = <CircleX size={20} />;
+    color = "bg-red-500";
+  } else if (isThisMonth(lastPayment)) {
+    icon = <CircleCheckBig size={20} />;
+    color = "bg-green-500";
+  } else {
+    icon = <HelpCircle size={20} />;
+    color = "bg-yellow-500";
+  }
+  return (
+    <div
+      className={`h-8 w-8 rounded-full ${color} p-1 flex items-center justify-center`}
+    >
+      {icon}
+    </div>
+  );
+};
+
 const ConnectionCard = ({
   connection,
-  now,
   onClick,
 }: {
   connection: Connection;
-  now: Date;
   onClick: (connectionId: string) => void;
 }) => {
   const setConnection = useCallback(
@@ -41,31 +55,22 @@ const ConnectionCard = ({
     [onClick, connection.id],
   );
 
-  let color = "bg-red-600";
-  if (connection.lastPayment) {
-    const lastPayment = new Date(connection.lastPayment);
-    if (
-      lastPayment.getMonth() === now.getMonth() &&
-      lastPayment.getFullYear() === now.getFullYear()
-    ) {
-      color = "bg-green-600";
-    }
-  }
-
   return (
-    <Card key={connection.id} onClick={setConnection}>
-      <CardHeader>
-        <CardTitle>{connection.name}</CardTitle>
-        <CardDescription>{connection.boxNumber}</CardDescription>
-        <CardAction>
-          <div className={`w-4 h-4 rounded-full ${color} m-4`} />
-        </CardAction>
-      </CardHeader>
-      <CardContent className="flex justify-between text-sm font-semibold">
+    <button type="button" key={connection.id} onClick={setConnection}>
+      <div className="flex justify-between">
+        <div className="flex flex-col items-start">
+          <h3 className="font-semibold">{connection.name}</h3>
+          <p className="text-muted-foreground text-sm">
+            {connection.boxNumber}
+          </p>
+        </div>
+        <ConnectionStatus lastPayment={connection.lastPayment} />
+      </div>
+      <div className="flex justify-between text-sm">
         <p>{connection.basePack.name}</p>
         <p>MRP: ₹{connection.basePack.customerPrice}</p>
-      </CardContent>
-    </Card>
+      </div>
+    </button>
   );
 };
 
@@ -80,7 +85,6 @@ export default function ConnectionsList({
   const [currConnection, setCurrConnection] = useState<
     Connection | undefined
   >();
-  const now = useMemo(() => new Date(), []);
   const showConnection = useCallback(
     (connectionId: string) => {
       const found = connections.find((con) => con.id === connectionId);
@@ -135,13 +139,15 @@ export default function ConnectionsList({
         </Empty>
       ) : (
         <div className="flex flex-col space-y-2">
-          {connections.map((connection) => (
-            <ConnectionCard
-              key={connection.id}
-              connection={connection}
-              now={now}
-              onClick={showConnection}
-            />
+          {connections.map((connection, i) => (
+            <>
+              <ConnectionCard
+                key={connection.id}
+                connection={connection}
+                onClick={showConnection}
+              />
+              {i !== 19 && <Separator />}
+            </>
           ))}
         </div>
       )}
