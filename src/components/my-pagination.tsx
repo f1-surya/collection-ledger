@@ -27,7 +27,7 @@ export default function MyPagination({ pages }: { pages: number }) {
   };
 
   const getPageNumbers = () => {
-    const delta = 2;
+    const delta = 1;
     const range = [];
     const rangeWithDots = [];
 

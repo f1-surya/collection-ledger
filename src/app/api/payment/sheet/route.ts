@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
   if (Object.keys(migrations).length > 0) {
     for (const pack in migrations) {
       zip.file(
-        `MIGRATION_${pack.replace(" ", "_")}.csv`,
+        `MIGRATION_${pack.replaceAll(" ", "_")}.csv`,
         writeCsv([["Vc Number"], ...migrations[pack]]),
       );
     }
