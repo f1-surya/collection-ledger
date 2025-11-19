@@ -17,7 +17,8 @@
     "settings": "Settings"
   },
   "Connections": {
-    "noConnections": "You don't have any connections yet."
+    "noConnections": "You don't have any connections yet.",
+    "noConnectionsForQuery": "Couldn't find any connections for your query."
   },
   "Area": {
     "list": "Here is a list of all your areas",

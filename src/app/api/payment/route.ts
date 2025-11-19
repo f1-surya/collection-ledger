@@ -1,5 +1,5 @@
 import { isThisMonth, startOfMonth } from "date-fns";
-import { and, desc, eq, gte, lte, ne } from "drizzle-orm";
+import { and, between, desc, eq, ne } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db/drizzle";
@@ -64,8 +64,7 @@ export async function POST(req: NextRequest) {
       and(
         eq(payments.connection, connectionId),
         eq(payments.org, org.id),
-        gte(payments.date, startOfMonth(now)),
-        lte(payments.date, now),
+        between(payments.date, startOfMonth(now), now),
       ),
     );
 
