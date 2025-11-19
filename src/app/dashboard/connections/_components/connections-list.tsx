@@ -1,34 +1,53 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { isThisMonth } from "date-fns";
+import { CircleCheckBig, CircleX, HelpCircle, TvMinimal } from "lucide-react";
 import dynamic from "next/dynamic";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useCallback, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
+import MyPagination from "@/components/my-pagination";
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import type { Connection } from "./columns";
+import CreateConnection from "./create";
 
-const CreateConnection = dynamic(
-  () => import("@/app/dashboard/connections/_components/create"),
-);
 const ConnectionDetails = dynamic(() => import("./connection-details"));
+
+const ConnectionStatus = ({ lastPayment }: { lastPayment: Date | null }) => {
+  let icon: ReactNode;
+  let color: string;
+  if (!lastPayment) {
+    icon = <CircleX size={20} />;
+    color = "bg-red-500";
+  } else if (isThisMonth(lastPayment)) {
+    icon = <CircleCheckBig size={20} />;
+    color = "bg-green-500";
+  } else {
+    icon = <HelpCircle size={20} />;
+    color = "bg-yellow-500";
+  }
+  return (
+    <div
+      className={`h-8 w-8 rounded-full ${color} p-1 flex items-center justify-center`}
+    >
+      {icon}
+    </div>
+  );
+};
 
 const ConnectionCard = ({
   connection,
-  now,
   onClick,
 }: {
   connection: Connection;
-  now: Date;
   onClick: (connectionId: string) => void;
 }) => {
   const setConnection = useCallback(
@@ -36,58 +55,36 @@ const ConnectionCard = ({
     [onClick, connection.id],
   );
 
-  let color = "bg-red-600";
-  if (connection.lastPayment) {
-    const lastPayment = new Date(connection.lastPayment);
-    if (
-      lastPayment.getMonth() === now.getMonth() &&
-      lastPayment.getFullYear() === now.getFullYear()
-    ) {
-      color = "bg-green-600";
-    }
-  }
-
   return (
-    <Card key={connection.id} onClick={setConnection}>
-      <CardHeader>
-        <CardTitle>{connection.name}</CardTitle>
-        <CardDescription>{connection.boxNumber}</CardDescription>
-        <CardAction>
-          <div className={`w-4 h-4 rounded-full ${color} m-4`} />
-        </CardAction>
-      </CardHeader>
-      <CardContent className="flex justify-between text-sm font-semibold">
+    <button type="button" key={connection.id} onClick={setConnection}>
+      <div className="flex justify-between">
+        <div className="flex flex-col items-start">
+          <h3 className="font-semibold">{connection.name}</h3>
+          <p className="text-muted-foreground text-sm">
+            {connection.boxNumber}
+          </p>
+        </div>
+        <ConnectionStatus lastPayment={connection.lastPayment} />
+      </div>
+      <div className="flex justify-between text-sm">
         <p>{connection.basePack.name}</p>
         <p>MRP: ₹{connection.basePack.customerPrice}</p>
-      </CardContent>
-    </Card>
+      </div>
+    </button>
   );
 };
 
 export default function ConnectionsList({
   connections: data,
+  pages,
 }: {
   connections: Connection[];
+  pages: number;
 }) {
   const [connections, setConnections] = useState(data);
-  const [search, setSearch] = useState("");
-  const [newConnection, setNewConnection] = useState(false);
   const [currConnection, setCurrConnection] = useState<
     Connection | undefined
   >();
-  const now = useMemo(() => new Date(), []);
-  const filtered = useMemo(() => {
-    if (search.length === 0) {
-      return connections;
-    }
-
-    const searchString = search.toUpperCase();
-    return connections.filter(
-      (connection) =>
-        connection.name.includes(searchString) ||
-        connection.boxNumber.includes(searchString),
-    );
-  }, [search, connections]);
   const showConnection = useCallback(
     (connectionId: string) => {
       const found = connections.find((con) => con.id === connectionId);
@@ -95,7 +92,23 @@ export default function ConnectionsList({
     },
     [connections],
   );
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+  const handleSearch = useDebouncedCallback((term) => {
+    const params = new URLSearchParams(searchParams);
+    if (term) {
+      params.set("search", term);
+    } else {
+      params.delete("search");
+    }
+    replace(`${pathname}?${params.toString()}`);
+  }, 250);
   const t = useTranslations("Connections");
+
+  useEffect(() => {
+    setConnections(data);
+  }, [data]);
 
   const markAsPaid = (connectionId: string) => {
     setConnections((prevCons) =>
@@ -108,43 +121,42 @@ export default function ConnectionsList({
 
   return (
     <div className="space-y-4">
+      <Input
+        type="search"
+        placeholder="Enter name or smartcard"
+        defaultValue={searchParams.get("search")?.toString()}
+        onChange={(e) => handleSearch(e.target.value)}
+      />
       {connections.length === 0 ? (
-        <div className="text-center">{t("noConnections")}</div>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia>
+              <TvMinimal />
+            </EmptyMedia>
+            <EmptyTitle>{t("noConnectionsForQuery")}</EmptyTitle>
+          </EmptyHeader>
+          <CreateConnection />
+        </Empty>
       ) : (
-        <>
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            type="search"
-            placeholder="Enter name or smartcard"
-          />
-          <ScrollArea className="h-[87dvh]">
-            <div className="flex flex-col space-y-2">
-              {filtered.map((connection) => (
-                <ConnectionCard
-                  key={connection.id}
-                  connection={connection}
-                  now={now}
-                  onClick={showConnection}
-                />
-              ))}
-            </div>
-          </ScrollArea>
-        </>
+        <div className="flex flex-col space-y-2">
+          {connections.map((connection, i) => (
+            <>
+              <ConnectionCard
+                key={connection.id}
+                connection={connection}
+                onClick={showConnection}
+              />
+              {i !== 19 && <Separator />}
+            </>
+          ))}
+        </div>
       )}
-      <Button
-        className="absolute right-0 bottom-0 m-6 w-14 h-14"
-        size="icon"
-        onClick={() => setNewConnection(!newConnection)}
-      >
-        <Plus />
-      </Button>
-      <CreateConnection open={newConnection} onOpenChange={setNewConnection} />
       <ConnectionDetails
         connection={currConnection}
         onOpenChange={setCurrConnection}
         callback={markAsPaid}
       />
+      <MyPagination pages={pages} />
     </div>
   );
 }
