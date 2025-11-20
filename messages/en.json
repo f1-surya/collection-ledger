@@ -83,5 +83,14 @@
     "userDescription": "Edit your profile information.",
     "companyTitle": "Company info",
     "companyDescription": "Edit your compnay's information"
+  },
+  "BulkPay": {
+    "selectedConnections": "{count, plural, =1 {1 connection} other {# connections}} selected for bulk payment",
+    "payNow": "Pay Now",
+    "clearSelection": "Clear Selection",
+    "notPaid": "Payments skipped for {count, plural, =1 {1 connectioon} other {# connections}}",
+    "notPaidReason": "Some connections were left unpaid due to invalid Box number or the connection was already marked as paid.",
+    "name": "Name",
+    "boxNumber": "Box Number"
   }
 }
