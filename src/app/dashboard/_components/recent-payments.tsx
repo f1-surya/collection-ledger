@@ -49,7 +49,7 @@ export async function RecentPayments({ orgId }: { orgId: string }) {
     .innerJoin(basePacks, eq(payments.currentPack, basePacks.id))
     .where(eq(payments.org, orgId))
     .orderBy(desc(payments.date))
-    .limit(4);
+    .limit(5);
 
   return (
     <Card>

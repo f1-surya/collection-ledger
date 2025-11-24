@@ -9,7 +9,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { db } from "@/db/drizzle";
-import { connections } from "@/db/schema";
+import { areas, basePacks, connections } from "@/db/schema";
 import { getOrg } from "@/lib/get-org";
 import Connections, { ConnectionsSkeleton } from "./_components/connections";
 import CreateConnection from "./_components/create";
@@ -58,17 +58,31 @@ export default async function ConnectionsPage({
   if (currPage < 0) {
     currPage = 0;
   }
-
-  const conns = await db.query.connections.findMany({
-    where: filter,
-    with: {
-      area: true,
-      basePack: true,
-    },
-    orderBy: connections.name,
-    limit: 20,
-    offset: currPage * 20,
-  });
+  const conns = await db
+    .select({
+      id: connections.id,
+      name: connections.name,
+      boxNumber: connections.boxNumber,
+      lastPayment: connections.lastPayment,
+      phoneNumber: connections.phoneNumber,
+      area: {
+        id: areas.id,
+        name: areas.name,
+      },
+      basePack: {
+        id: basePacks.id,
+        name: basePacks.name,
+        lcoPrice: basePacks.lcoPrice,
+        customerPrice: basePacks.customerPrice,
+      },
+    })
+    .from(connections)
+    .innerJoin(areas, eq(connections.area, areas.id))
+    .innerJoin(basePacks, eq(connections.basePack, basePacks.id))
+    .where(filter)
+    .orderBy(connections.name)
+    .limit(20)
+    .offset(currPage * 20);
 
   return (
     <main className="p-4">
