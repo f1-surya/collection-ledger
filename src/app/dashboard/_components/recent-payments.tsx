@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/db/drizzle";
 import { basePacks, connections, payments } from "@/db/schema";
-import { getOrg } from "@/lib/get-org";
 
 export function LoadingRecentPayments() {
   return (
@@ -15,9 +14,9 @@ export function LoadingRecentPayments() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+          {Array.from({ length: 4 }).map(() => (
             <div
-              key={`recent-payment-${i}`}
+              key={`recent-payment-${Math.random()}`}
               className="flex justify-between items-center"
             >
               <div>
@@ -36,9 +35,7 @@ export function LoadingRecentPayments() {
   );
 }
 
-export async function RecentPayments() {
-  const org = await getOrg();
-
+export async function RecentPayments({ orgId }: { orgId: string }) {
   const recentPayments = await db
     .select({
       id: payments.id,
@@ -50,7 +47,7 @@ export async function RecentPayments() {
     .from(payments)
     .innerJoin(connections, eq(payments.connection, connections.id))
     .innerJoin(basePacks, eq(payments.currentPack, basePacks.id))
-    .where(eq(payments.org, org.id))
+    .where(eq(payments.org, orgId))
     .orderBy(desc(payments.date))
     .limit(4);
 
