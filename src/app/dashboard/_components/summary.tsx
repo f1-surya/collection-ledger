@@ -1,11 +1,10 @@
 import { startOfMonth, subDays } from "date-fns";
-import { and, eq, gte, isNull, lt, or, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { AlertTriangle, TrendingUp, Users, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/db/drizzle";
 import { connections, payments } from "@/db/schema";
-import { getOrg } from "@/lib/get-org";
 
 export function SummarySkeleton() {
   return (
@@ -28,43 +27,36 @@ export function SummarySkeleton() {
   );
 }
 
-export async function Summary() {
-  const org = await getOrg();
-
+export async function Summary({ orgId }: { orgId: string }) {
   const thirtyDaysAgo = subDays(new Date(), 30);
   const start = startOfMonth(new Date());
 
-  const [
+  const res = await db
+    .select({
+      totalConnections: sql<number>`count(*)`.mapWith(Number),
+      activeConnections:
+        sql<number>`count(case when ${connections.lastPayment} >= ${thirtyDaysAgo} then 1 end)`.mapWith(
+          Number,
+        ),
+      overduePayments:
+        sql<number>`count(case when ${connections.lastPayment} <= ${thirtyDaysAgo} or ${connections.lastPayment} is null then 1 end)`.mapWith(
+          Number,
+        ),
+      monthlyRevenue: sql<number>`(
+      select coalesce(sum(${payments.customerPrice}), 0)
+      from ${payments}
+      where ${payments.org} = ${orgId} and ${payments.date} >= ${start}
+      )`.mapWith(Number),
+    })
+    .from(connections)
+    .where(eq(connections.org, orgId));
+  const {
     totalConnections,
     activeConnections,
-    monthlyRevenueResult,
     overduePayments,
-  ] = await Promise.all([
-    db.$count(connections, eq(connections.org, org.id)),
-    db.$count(
-      connections,
-      and(
-        eq(connections.org, org.id),
-        gte(connections.lastPayment, thirtyDaysAgo),
-      ),
-    ),
-    db
-      .select({ sum: sql<number>`sum(${payments.customerPrice})` })
-      .from(payments)
-      .where(and(eq(payments.org, org.id), gte(payments.date, start))),
-    db.$count(
-      connections,
-      and(
-        eq(connections.org, org.id),
-        or(
-          isNull(connections.lastPayment),
-          lt(connections.lastPayment, thirtyDaysAgo),
-        ),
-      ),
-    ),
-  ]);
+    monthlyRevenue,
+  } = res[0];
 
-  const monthlyRevenue = monthlyRevenueResult[0]?.sum || 0;
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card>
