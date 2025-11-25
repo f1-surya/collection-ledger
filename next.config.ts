@@ -3,7 +3,9 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
-  cacheComponents: true,
+  experimental: {
+    turbopackFileSystemCacheForDev: true,
+  },
 };
 
 const withNextIntl = createNextIntlPlugin();
