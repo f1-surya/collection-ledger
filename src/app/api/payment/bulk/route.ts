@@ -61,22 +61,31 @@ export async function POST(req: NextRequest) {
   }
 
   await db.transaction(async (tx) => {
-    const newPayments: (typeof payments.$inferInsert)[] = [];
-    for (const con of consToPay) {
-      newPayments.push({
-        id: nanoid(),
-        connection: con.id,
-        currentPack: con.basePack.id,
-        lcoPrice: con.basePack.lcoPrice,
-        customerPrice: con.basePack.customerPrice,
-        org: org.id,
-      });
-      await tx
+    const newPayments = consToPay.map((con) => ({
+      id: nanoid(),
+      connection: con.id,
+      date: now,
+      currentPack: con.basePack.id,
+      lcoPrice: con.basePack.lcoPrice,
+      customerPrice: con.basePack.customerPrice,
+      org: org.id,
+    }));
+
+    await Promise.all([
+      tx.insert(payments).values(newPayments),
+      tx
         .update(connections)
         .set({ lastPayment: now })
-        .where(and(eq(connections.org, org.id), eq(connections.id, con.id)));
-    }
-    await tx.insert(payments).values(newPayments);
+        .where(
+          and(
+            eq(connections.org, org.id),
+            inArray(
+              connections.id,
+              consToPay.map((con) => con.id),
+            ),
+          ),
+        ),
+    ]);
   });
 
   return NextResponse.json({

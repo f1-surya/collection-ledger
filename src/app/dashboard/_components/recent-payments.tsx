@@ -51,6 +51,8 @@ export async function RecentPayments({ orgId }: { orgId: string }) {
     .orderBy(desc(payments.date))
     .limit(5);
 
+  if (recentPayments.length === 0) return null;
+
   return (
     <Card>
       <CardHeader>

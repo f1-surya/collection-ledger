@@ -58,7 +58,8 @@ export const connections = pgTable(
   (table) => [
     index("connection_org_index").on(table.org),
     index("connection_id_index").on(table.id),
-    index("connection_boxNumber_index").on(table.boxNumber),
+    index("connection_org_boxNumber_index").on(table.org, table.boxNumber),
+    index("connection_org_name_index").on(table.org, table.name),
   ],
 );
 
@@ -93,7 +94,7 @@ export const payments = pgTable(
       .references(() => organization.id),
   },
   (table) => [
-    index("payments_date_index").on(table.date),
+    index("payments_org_date_index").on(table.org, table.date),
     index("payments_connection_index").on(table.connection),
     index("payments_org_index").on(table.org),
     index("payments_monthly_check_idx").on(

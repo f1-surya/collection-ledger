@@ -83,8 +83,8 @@ export default function PaymentsHistory({
       <CardContent>
         {loading ? (
           <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <Card key={i}>
+            {[...Array(3)].map(() => (
+              <Card key={Math.random()}>
                 <CardHeader>
                   <Skeleton className="h-4 w-3/4" />
                   <Skeleton className="h-3 w-1/2" />
