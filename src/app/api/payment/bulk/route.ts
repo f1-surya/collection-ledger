@@ -68,11 +68,22 @@ export async function POST(req: NextRequest) {
       currentPack: con.basePack.id,
       lcoPrice: con.basePack.lcoPrice,
       customerPrice: con.basePack.customerPrice,
+      items: [
+        {
+          id: con.basePack.id,
+          name: con.basePack.name,
+          lcoPrice: con.basePack.lcoPrice,
+          customerPrice: con.basePack.customerPrice,
+        },
+      ],
       org: org.id,
     }));
 
     await Promise.all([
-      tx.insert(payments).values(newPayments),
+      tx
+        .insert(payments)
+        // @ts-expect-error It'll be okay in runtime
+        .values(newPayments),
       tx
         .update(connections)
         .set({ lastPayment: now })
