@@ -28,6 +28,7 @@ export async function markConnectionAsPaid(connectionId: string) {
 
   const data = await db.transaction(async (tx) => {
     const now = new Date();
+    const basePack = currConnection.basePack;
     const [newPayments] = await Promise.all([
       tx
         .insert(payments)
@@ -36,8 +37,16 @@ export async function markConnectionAsPaid(connectionId: string) {
           connection: connectionId,
           currentPack: currConnection.basePack.id,
           org: org.id,
-          lcoPrice: currConnection.basePack.lcoPrice,
-          customerPrice: currConnection.basePack.customerPrice,
+          lcoPrice: basePack.lcoPrice,
+          customerPrice: basePack.customerPrice,
+          items: [
+            {
+              id: basePack.id,
+              name: basePack.name,
+              lcoPrice: basePack.lcoPrice,
+              customerPrice: basePack.customerPrice,
+            },
+          ],
           date: now,
         })
         .returning(),
@@ -148,7 +157,19 @@ export async function migrateConnection(
       latestPayment = (
         await tx
           .update(payments)
-          .set({ to: toPackId, isMigration: true, date: now })
+          .set({
+            to: toPackId,
+            isMigration: true,
+            date: now,
+            items: [
+              {
+                id: toPack.id,
+                name: toPack.name,
+                lcoPrice: toPack.lcoPrice,
+                customerPrice: toPack.customerPrice,
+              },
+            ],
+          })
           .where(
             and(
               eq(payments.org, org.id),
@@ -164,12 +185,20 @@ export async function migrateConnection(
           .values({
             id: nanoid(),
             connection: connection.id,
-            currentPack: connection.basePack,
+            currentPack: connection.basePack.id,
             isMigration: true,
             to: toPackId,
             lcoPrice: toPack.lcoPrice,
             customerPrice: toPack.customerPrice,
             date: now,
+            items: [
+              {
+                id: toPack.id,
+                name: toPack.name,
+                lcoPrice: toPack.lcoPrice,
+                customerPrice: toPack.customerPrice,
+              },
+            ],
             org: org.id,
           })
           .returning()
