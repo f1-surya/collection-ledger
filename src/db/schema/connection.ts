@@ -3,6 +3,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -89,6 +90,11 @@ export const payments = pgTable(
     isMigration: boolean().notNull().default(false),
     lcoPrice: integer().notNull(),
     customerPrice: integer().notNull(),
+    items: jsonb()
+      .notNull()
+      .$type<
+        [{ id: string; name: string; lcoPrice: number; customerPrice: number }]
+      >(),
     org: text()
       .notNull()
       .references(() => organization.id),
