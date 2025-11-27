@@ -22,6 +22,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { markConnectionAsPaid } from "@/db/payments";
+import { tryCatch } from "@/lib/try-catch";
 import type { Connection } from "./columns";
 
 interface Props {
@@ -55,16 +57,12 @@ export default function ConnectionDetails({
   const markAsPaid = async () => {
     if (!connection) return;
     setMarkingAsPaid(true);
-
-    const res = await fetch(`/api/payment?connectionId=${connection.id}`, {
-      method: "POST",
-    });
+    const { error } = await tryCatch(markConnectionAsPaid(connection.id));
     setMarkingAsPaid(false);
 
-    if (!res.ok) {
-      const error = await res.json();
+    if (error) {
       console.error(error);
-      toast.error("Something went wrong");
+      toast.error(error.message);
       return;
     }
 

@@ -5,9 +5,16 @@ import { CircleCheckBig, CircleX, HelpCircle, TvMinimal } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useDebouncedCallback } from "use-debounce";
 import MyPagination from "@/components/my-pagination";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Empty,
   EmptyHeader,
@@ -17,6 +24,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import type { Connection } from "./columns";
+import { BulkPay, useConnectionsSelection } from "./connections-selections";
 import CreateConnection from "./create";
 
 const ConnectionDetails = dynamic(() => import("./connection-details"));
@@ -46,31 +54,56 @@ const ConnectionStatus = ({ lastPayment }: { lastPayment: Date | null }) => {
 const ConnectionCard = ({
   connection,
   onClick,
+  isSelected,
+  onSelect,
 }: {
   connection: Connection;
   onClick: (connectionId: string) => void;
+  isSelected: boolean;
+  onSelect: (val: boolean) => void;
 }) => {
   const setConnection = useCallback(
     () => onClick(connection.id),
     [onClick, connection.id],
   );
+  const isSelectDisabled = useMemo(() => {
+    const lastPayment = connection.lastPayment;
+    if (!lastPayment) {
+      return false;
+    }
+    return isThisMonth(lastPayment);
+  }, [connection]);
 
   return (
-    <button type="button" key={connection.id} onClick={setConnection}>
-      <div className="flex justify-between">
-        <div className="flex flex-col items-start">
-          <h3 className="font-semibold">{connection.name}</h3>
-          <p className="text-muted-foreground text-sm">
-            {connection.boxNumber}
-          </p>
+    <div key={connection.id} className="w-full flex items-center">
+      <Checkbox
+        className="w-6 h-6 mr-4"
+        disabled={isSelectDisabled}
+        checked={isSelected}
+        onCheckedChange={onSelect}
+      />
+      <button
+        type="button"
+        className="flex flex-col w-full"
+        onClick={setConnection}
+      >
+        <div className="flex justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col items-start">
+              <h3 className="font-semibold">{connection.name}</h3>
+              <p className="text-muted-foreground text-sm">
+                {connection.boxNumber}
+              </p>
+            </div>
+          </div>
+          <ConnectionStatus lastPayment={connection.lastPayment} />
         </div>
-        <ConnectionStatus lastPayment={connection.lastPayment} />
-      </div>
-      <div className="flex justify-between text-sm">
-        <p>{connection.basePack.name}</p>
-        <p>MRP: ₹{connection.basePack.customerPrice}</p>
-      </div>
-    </button>
+        <div className="flex justify-between text-sm">
+          <p>{connection.basePack.name}</p>
+          <p>MRP: ₹{connection.basePack.customerPrice}</p>
+        </div>
+      </button>
+    </div>
   );
 };
 
@@ -105,6 +138,7 @@ export default function ConnectionsList({
     replace(`${pathname}?${params.toString()}`);
   }, 250);
   const t = useTranslations("Connections");
+  const { selected, setSelected, clear } = useConnectionsSelection();
 
   useEffect(() => {
     setConnections(data);
@@ -127,6 +161,7 @@ export default function ConnectionsList({
         defaultValue={searchParams.get("search")?.toString()}
         onChange={(e) => handleSearch(e.target.value)}
       />
+      <BulkPay smcs={Object.keys(selected)} clear={clear} />
       {connections.length === 0 ? (
         <Empty>
           <EmptyHeader>
@@ -140,14 +175,17 @@ export default function ConnectionsList({
       ) : (
         <div className="flex flex-col space-y-2">
           {connections.map((connection, i) => (
-            <>
+            <div key={connection.id}>
               <ConnectionCard
-                key={connection.id}
                 connection={connection}
                 onClick={showConnection}
+                isSelected={Boolean(selected[connection.boxNumber])}
+                onSelect={(val) =>
+                  setSelected({ ...selected, [connection.boxNumber]: val })
+                }
               />
               {i !== 19 && <Separator />}
-            </>
+            </div>
           ))}
         </div>
       )}

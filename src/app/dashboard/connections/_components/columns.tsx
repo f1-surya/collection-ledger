@@ -2,6 +2,7 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export type Connection = {
   id: string;
@@ -19,6 +20,17 @@ export type Connection = {
 };
 
 export const columns: ColumnDef<Connection>[] = [
+  {
+    id: "select",
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        disabled={!row.getCanSelect()}
+        onCheckedChange={row.getToggleSelectedHandler()}
+        className="size-5"
+      />
+    ),
+  },
   {
     accessorKey: "name",
     header: () => <div className="font-semibold">Name</div>,

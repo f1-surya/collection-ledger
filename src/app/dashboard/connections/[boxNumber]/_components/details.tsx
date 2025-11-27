@@ -40,7 +40,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  deletePayment,
+  markConnectionAsPaid,
+  migrateConnection,
+} from "@/db/payments";
 import { fetcher } from "@/lib/fetcher";
+import { tryCatch } from "@/lib/try-catch";
 import type { Connection } from "../../_components/columns";
 import PaymentsHistory from "./payments";
 import type { Payment } from "./types";
@@ -79,23 +85,16 @@ export function Details({ currConnection }: { currConnection: Connection }) {
   const markAsPaid = async () => {
     if (!connection) return;
     setMarkingAsPaid(true);
-
-    const res = await fetch(`/api/payment?connectionId=${connection.id}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    const { data, error } = await tryCatch(markConnectionAsPaid(connection.id));
     setMarkingAsPaid(false);
 
-    if (!res.ok) {
-      const error = await res.json();
+    if (error) {
       console.error(error);
       toast.error(error.message);
     } else {
-      const newPayment: Payment = await res.json();
-      setConnection({ ...connection, lastPayment: newPayment.date });
-      mutatePayments([newPayment, ...payments]);
+      setConnection({ ...connection, lastPayment: data.date });
+      // @ts-expect-error Unnecessary error.
+      mutatePayments([data, ...payments]);
     }
   };
 
@@ -111,42 +110,35 @@ export function Details({ currConnection }: { currConnection: Connection }) {
     if (!selectedPack) return;
     setMigrating(true);
 
-    const res = await fetch(
-      `/api/migrate?connectionId=${connection.id}&to=${selectedPack.id}`,
-      { method: "POST" },
+    const { data: payment, error } = await tryCatch(
+      migrateConnection(connection.id, selectedPack.id),
     );
 
-    if (res.ok) {
-      const payment: Payment = await res.json();
+    if (payment) {
       mutatePayments([payment, ...payments]);
       setConnection({
         ...connection,
-        // @ts-expect-error
         basePack: payment.to,
         lastPayment: payment.date,
       });
       setSelectedPack(undefined);
     } else {
-      const errors = await res.json();
-      toast.error(errors.message);
+      toast.error(error.message);
     }
     setMigrating(false);
   };
 
-  const deletePayment = async (id: string) => {
-    const promise = fetch(`/api/payment?paymentId=${id}`, {
-      method: "DELETE",
-    });
-
+  const deleteCurrentPayment = async (id: string) => {
+    const promise = deletePayment(id);
     toast.promise(promise, {
       loading: "Deleting payment...",
       success: "Payment deleted successfully.",
       error: "Something went wrong while deleting the payment.",
     });
 
-    const res = await promise;
+    const { error } = await tryCatch(promise);
 
-    if (res.ok) {
+    if (!error) {
       mutatePayments(payments.filter((payment) => payment.id !== id));
       // Update connection state based on the deleted payment
       const payment = payments.find((p) => p.id === id);
@@ -166,7 +158,6 @@ export function Details({ currConnection }: { currConnection: Connection }) {
         });
       }
     } else {
-      const error = await res.json();
       toast.error(error.message);
     }
   };
@@ -322,7 +313,7 @@ export function Details({ currConnection }: { currConnection: Connection }) {
       </Card>
       <PaymentsHistory
         payments={payments}
-        deletePayment={deletePayment}
+        deletePayment={deleteCurrentPayment}
         loading={paymentsLoading}
       />
       <MigrationDialog
