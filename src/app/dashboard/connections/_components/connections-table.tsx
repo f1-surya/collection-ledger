@@ -3,10 +3,9 @@
 import {
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { isThisMonth } from "date-fns";
 import { TvMinimal } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -30,6 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { type Connection, columns } from "./columns";
+import { BulkPay, useConnectionsSelection } from "./connections-selections";
 import CreateConnection from "./create";
 
 const ConnectionDetails = dynamic(() => import("./connection-details"));
@@ -44,17 +44,23 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
   const [currConnection, setCurrConnection] = useState<
     Connection | undefined
   >();
+  const { selected, setSelected, clear } = useConnectionsSelection();
   const table = useReactTable({
     data: connections,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 20,
-      },
+    getRowId: (row) => row.boxNumber,
+    enableRowSelection: (row) => {
+      const lastPayment = row.original.lastPayment;
+      if (!lastPayment) {
+        return true;
+      }
+      return !isThisMonth(lastPayment);
     },
-    getPaginationRowModel: getPaginationRowModel(),
+    onRowSelectionChange: setSelected,
+    state: {
+      rowSelection: selected,
+    },
   });
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -85,7 +91,7 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
 
   return (
     <div>
-      <div className="flex items-center gap-4 w-full py-4">
+      <div className="flex flex-col justify-center gap-4 w-full py-4">
         <Input
           placeholder="Search by name or SMC"
           type="search"
@@ -93,6 +99,7 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
           onChange={(event) => handleSearch(event.target.value)}
           className="max-w-sm"
         />
+        <BulkPay smcs={Object.keys(selected)} clear={clear} />
       </div>
       {!table.getRowModel().rows.length ? (
         <Empty>
@@ -125,12 +132,16 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
             </TableHeader>
             <TableBody>
               {table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  onClick={() => setCurrConnection(row.original as Connection)}
-                >
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      onClick={
+                        cell.id.includes("select")
+                          ? undefined
+                          : () => setCurrConnection(row.original)
+                      }
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
