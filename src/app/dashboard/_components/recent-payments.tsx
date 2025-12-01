@@ -1,5 +1,15 @@
+import { format } from "date-fns";
 import { desc, eq, sql } from "drizzle-orm";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/db/drizzle";
 import { basePacks, connections, payments } from "@/db/schema";
@@ -49,7 +59,7 @@ export async function RecentPayments({ orgId }: { orgId: string }) {
     .innerJoin(basePacks, eq(payments.currentPack, basePacks.id))
     .where(eq(payments.org, orgId))
     .orderBy(desc(payments.date))
-    .limit(5);
+    .limit(10);
 
   if (recentPayments.length === 0) return null;
 
@@ -57,6 +67,13 @@ export async function RecentPayments({ orgId }: { orgId: string }) {
     <Card>
       <CardHeader>
         <CardTitle>Recent Payments</CardTitle>
+        <CardAction>
+          <Link href="/dashboard/payments-history">
+            <Button size="icon">
+              <ChevronRight />
+            </Button>
+          </Link>
+        </CardAction>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -68,7 +85,9 @@ export async function RecentPayments({ orgId }: { orgId: string }) {
               </div>
               <div className="text-right">
                 <p className="font-medium">₹{payment.amount}</p>
-                <p className="text-sm text-muted-foreground">{payment.date}</p>
+                <p className="text-sm text-muted-foreground">
+                  {format(payment.date, "dd MMM yyyy")}
+                </p>
               </div>
             </div>
           ))}
