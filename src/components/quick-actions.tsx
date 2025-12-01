@@ -13,8 +13,12 @@ const CreateConnection = dynamic(
 );
 
 export function QuickActions() {
-  const [boxNumber, setBoxNumber] = useState("");
+  const [search, setSearch] = useState("");
   const router = useRouter();
+
+  const navigate = () => {
+    router.push(`/dashboard/connections?search=${search.toUpperCase()}`);
+  };
 
   return (
     <Card>
@@ -39,17 +43,16 @@ export function QuickActions() {
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="Enter Box Number"
-              value={boxNumber}
-              onChange={(e) => setBoxNumber(e.target.value)}
+              placeholder="Enter Box Number or Name"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyUp={(e) => {
+                if (e.key === "Enter") {
+                  navigate();
+                }
+              }}
             />
-            <Button
-              onClick={() =>
-                router.push(`/dashboard/connections/${boxNumber.toUpperCase()}`)
-              }
-            >
-              View Connection
-            </Button>
+            <Button onClick={navigate}>View Connection</Button>
           </div>
         </div>
       </CardContent>
