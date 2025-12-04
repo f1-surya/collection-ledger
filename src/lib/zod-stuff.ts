@@ -21,6 +21,7 @@ export const connectionSchema = z.object({
 });
 
 export const connectionUpdateSchema = z.object({
+  id: z.nanoid(),
   name: z
     .string()
     .min(4, { message: "Name should contain at least 4 characterns" })
@@ -29,7 +30,8 @@ export const connectionUpdateSchema = z.object({
   phoneNumber: z
     .string()
     .min(10, { message: "Not a valid phone number" })
-    .trim(),
+    .trim()
+    .optional(),
   boxNumber: z
     .string()
     .min(10, { message: "Smartcard should be at least 10 characters long" })

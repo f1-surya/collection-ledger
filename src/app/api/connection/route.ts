@@ -53,9 +53,22 @@ export async function PUT(req: NextRequest) {
 
   const org = await getOrg();
 
-  const conflict = await checkBoxNumber(data.boxNumber, org.id);
-  if (conflict) {
-    return NextResponse.json({ boxNumber: conflict }, { status: 400 });
+  const oldConnection = await db.query.connections.findFirst({
+    where: and(eq(connections.org, org.id), eq(connections.id, data.id)),
+  });
+
+  if (!oldConnection) {
+    return NextResponse.json(
+      { message: "The connection you're trying to edit doesn't exist." },
+      { status: 404 },
+    );
+  }
+
+  if (oldConnection.boxNumber !== data.boxNumber) {
+    const conflict = await checkBoxNumber(data.boxNumber, org.id);
+    if (conflict) {
+      return NextResponse.json({ boxNumber: conflict }, { status: 400 });
+    }
   }
 
   await db
