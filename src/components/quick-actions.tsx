@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, Search } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -52,7 +52,9 @@ export function QuickActions() {
                 }
               }}
             />
-            <Button onClick={navigate}>View Connection</Button>
+            <Button onClick={navigate} size="icon">
+              <Search />
+            </Button>
           </div>
         </div>
       </CardContent>
