@@ -54,7 +54,7 @@ export default function UpdateConnection({
     setSaving(true);
     const res = await fetch("/api/connection", {
       method: "PUT",
-      body: JSON.stringify({ id: connection.id, ...data }),
+      body: JSON.stringify({ ...data }),
       headers: {
         "Content-Type": "application/json",
       },

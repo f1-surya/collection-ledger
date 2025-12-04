@@ -166,7 +166,7 @@ export function Details({ currConnection }: { currConnection: Connection }) {
     setConnection({
       ...connection,
       name: data.name,
-      phoneNumber: data.phoneNumber,
+      phoneNumber: data.phoneNumber ?? null,
       boxNumber: data.boxNumber,
       area,
     });
