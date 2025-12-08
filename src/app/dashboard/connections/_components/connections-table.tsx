@@ -10,7 +10,7 @@ import { TvMinimal } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import MyPagination from "@/components/my-pagination";
 import {
@@ -44,6 +44,7 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
   const [currConnection, setCurrConnection] = useState<
     Connection | undefined
   >();
+  const inputRef = useRef<HTMLInputElement>(null);
   const { selected, setSelected, clear } = useConnectionsSelection();
   const table = useReactTable({
     data: connections,
@@ -77,6 +78,21 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
   const t = useTranslations("Connections");
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e) && e.key === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
     setConnections(data);
   }, [data]);
 
@@ -95,6 +111,7 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
         <Input
           placeholder="Search by name or SMC"
           type="search"
+          ref={inputRef}
           defaultValue={searchParams.get("search")?.toString()}
           onChange={(event) => handleSearch(event.target.value)}
           className="max-w-sm"
