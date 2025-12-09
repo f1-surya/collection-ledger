@@ -79,7 +79,7 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e) && e.key === "k") {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
         inputRef.current?.focus();
         inputRef.current?.select();
