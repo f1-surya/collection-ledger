@@ -108,6 +108,7 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
   return (
     <div>
       <div className="flex flex-col justify-center gap-4 w-full py-4">
+        <BulkPay smcs={Object.keys(selected)} clear={clear} />
         <Input
           placeholder="Search by name or SMC"
           type="search"
@@ -116,7 +117,6 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
           onChange={(event) => handleSearch(event.target.value)}
           className="max-w-sm"
         />
-        <BulkPay smcs={Object.keys(selected)} clear={clear} />
       </div>
       {!table.getRowModel().rows.length ? (
         <Empty>
