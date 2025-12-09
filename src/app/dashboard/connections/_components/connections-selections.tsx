@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   AlertDialog,
+  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -59,6 +60,7 @@ export function BulkPay({
 }) {
   const [notPaidCons, setNotPaidCons] = useState<string[][]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
   const t = useTranslations("BulkPay");
 
   const handlePayNow = async () => {
@@ -108,7 +110,11 @@ export function BulkPay({
             <Button size="sm" onClick={handlePayNow}>
               {isLoading ? <Spinner /> : t("payNow")}
             </Button>
-            <Button size="sm" variant="outline" onClick={clear}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsClearDialogOpen(true)}
+            >
               {t("clearSelection")}
             </Button>
           </ItemActions>
@@ -145,6 +151,27 @@ export function BulkPay({
           </Table>
           <AlertDialogFooter>
             <AlertDialogCancel>Okay</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={isClearDialogOpen} onOpenChange={setIsClearDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("confirmClear")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("confirmClearDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                clear();
+                setIsClearDialogOpen(false);
+              }}
+            >
+              Clear
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

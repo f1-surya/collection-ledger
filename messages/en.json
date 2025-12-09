@@ -88,6 +88,8 @@
     "selectedConnections": "{count, plural, =1 {1 connection} other {# connections}} selected for bulk payment",
     "payNow": "Pay Now",
     "clearSelection": "Clear Selection",
+    "confirmClear": "Confirm Clear Selection",
+    "confirmClearDescription": "Are you sure you want to clear the selected connections? This action cannot be undone.",
     "notPaid": "Payments skipped for {count, plural, =1 {1 connectioon} other {# connections}}",
     "notPaidReason": "Some connections were left unpaid due to invalid Box number or the connection was already marked as paid.",
     "name": "Name",
