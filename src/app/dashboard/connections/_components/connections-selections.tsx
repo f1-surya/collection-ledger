@@ -3,6 +3,12 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
+  ActionBar,
+  ActionBarGroup,
+  ActionBarItem,
+  ActionBarSelection,
+} from "@/components/ui/action-bar";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -12,8 +18,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Item, ItemActions, ItemTitle } from "@/components/ui/item";
 import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
@@ -102,23 +106,23 @@ export function BulkPay({
   return (
     <>
       {smcs.length > 0 && (
-        <Item size="sm" variant="outline" className="w-fit">
-          <ItemTitle>
+        <ActionBar open={smcs.length > 0}>
+          <ActionBarSelection>
             {t("selectedConnections", { count: smcs.length })}
-          </ItemTitle>
-          <ItemActions>
-            <Button size="sm" onClick={handlePayNow}>
+          </ActionBarSelection>
+          <ActionBarGroup>
+            <ActionBarItem size="sm" onSelect={handlePayNow}>
               {isLoading ? <Spinner /> : t("payNow")}
-            </Button>
-            <Button
+            </ActionBarItem>
+            <ActionBarItem
               size="sm"
-              variant="outline"
-              onClick={() => setIsClearDialogOpen(true)}
+              variant="destructive"
+              onSelect={() => setIsClearDialogOpen(true)}
             >
               {t("clearSelection")}
-            </Button>
-          </ItemActions>
-        </Item>
+            </ActionBarItem>
+          </ActionBarGroup>
+        </ActionBar>
       )}
       <AlertDialog
         open={notPaidCons.length > 0}
