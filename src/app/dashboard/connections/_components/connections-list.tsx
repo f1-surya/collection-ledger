@@ -1,17 +1,11 @@
 "use client";
 
-import { isThisMonth } from "date-fns";
+import { isSameMonth, isThisMonth, subMonths } from "date-fns";
 import { CircleCheckBig, CircleX, HelpCircle, TvMinimal } from "lucide-react";
 import dynamic from "next/dynamic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import MyPagination from "@/components/my-pagination";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -30,17 +24,16 @@ import CreateConnection from "./create";
 const ConnectionDetails = dynamic(() => import("./connection-details"));
 
 const ConnectionStatus = ({ lastPayment }: { lastPayment: Date | null }) => {
-  let icon: ReactNode;
-  let color: string;
-  if (!lastPayment) {
-    icon = <CircleX size={20} />;
-    color = "bg-red-500";
-  } else if (isThisMonth(lastPayment)) {
-    icon = <CircleCheckBig size={20} />;
-    color = "bg-green-500";
-  } else {
-    icon = <HelpCircle size={20} />;
-    color = "bg-yellow-500";
+  let icon = <CircleX size={20} />;
+  let color = "bg-red-500";
+  if (lastPayment) {
+    if (isThisMonth(lastPayment)) {
+      icon = <CircleCheckBig size={20} />;
+      color = "bg-green-500";
+    } else if (isSameMonth(lastPayment, subMonths(new Date(), 1))) {
+      icon = <HelpCircle size={20} />;
+      color = "bg-yellow-500";
+    }
   }
   return (
     <div
