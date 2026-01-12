@@ -1,8 +1,9 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { format } from "date-fns";
+import { isSameMonth, isThisMonth, subMonths } from "date-fns";
 import { Checkbox } from "@/components/ui/checkbox";
+import { format } from "date-fns";
 
 export type Connection = {
   id: string;
@@ -57,10 +58,25 @@ export const columns: ColumnDef<Connection>[] = [
     accessorKey: "lastPayment",
     header: () => <div className="font-semibold">Last payment</div>,
     cell: ({ row }) => {
-      const lastPayment = row.getValue("lastPayment");
-      if (!lastPayment) return "Nil";
+      const lastPayment: Date | null = row.getValue("lastPayment");
+      let color = "bg-red-500/70";
 
-      return format(lastPayment as Date, "dd MMM yyyy");
+      if (lastPayment) {
+        if (isThisMonth(lastPayment)) {
+          color = "bg-green-500/70";
+        } else if (isSameMonth(lastPayment, subMonths(new Date(), 1))) {
+          color = "bg-yellow-500/70";
+        }
+      }
+      return (
+        <div className="flex items-center justify-center">
+          <div
+            className={`rounded-sm w-full ${color} p-1 flex items-center justify-center font-semibold`}
+          >
+            {lastPayment ? format(lastPayment, "dd MMM yyyy") : "Nil"}
+          </div>
+        </div>
+      );
     },
   },
 ];
