@@ -90,7 +90,7 @@ export function BulkPay({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${format(new Date(), "MMM-yyyy")}-lists.csv`;
+      a.download = `${format(new Date(), "dd-MMM-yy HH-mm")}-paid-list.csv`;
       a.click();
       URL.revokeObjectURL(url);
       clear();
