@@ -1,6 +1,6 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
   title: "Terms of Service - Collection Ledger",
@@ -11,9 +11,11 @@ export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+      <header className="border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">Collection Ledger</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            Collection Ledger
+          </h1>
           <Link href="/">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -30,9 +32,7 @@ export default function TermsOfService() {
             <h1 className="text-4xl font-bold text-foreground mb-4">
               Terms of Service
             </h1>
-            <p className="text-muted-foreground">
-              Last updated: February 2024
-            </p>
+            <p className="text-muted-foreground">Last updated: February 2026</p>
           </div>
 
           <section className="space-y-4">
@@ -79,8 +79,8 @@ export default function TermsOfService() {
               <li className="flex gap-3">
                 <span className="text-primary">•</span>
                 <span>
-                  Removing any copyright or other proprietary notations from
-                  the materials
+                  Removing any copyright or other proprietary notations from the
+                  materials
                 </span>
               </li>
               <li className="flex gap-3">
@@ -101,8 +101,8 @@ export default function TermsOfService() {
               The materials on Collection Ledger are provided on an 'as is'
               basis. Collection Ledger makes no warranties, expressed or
               implied, and hereby disclaims and negates all other warranties
-              including, without limitation, implied warranties or conditions
-              of merchantability, fitness for a particular purpose, or
+              including, without limitation, implied warranties or conditions of
+              merchantability, fitness for a particular purpose, or
               non-infringement of intellectual property or other violation of
               rights.
             </p>
@@ -135,15 +135,13 @@ export default function TermsOfService() {
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-foreground">
-              6. Links
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground">6. Links</h2>
             <p className="text-muted-foreground leading-relaxed">
               Collection Ledger has not reviewed all of the sites linked to its
-              Service and is not responsible for the contents of any such
-              linked site. The inclusion of any link does not imply endorsement
-              by Collection Ledger of the site. Use of any such linked website
-              is at the user's own risk.
+              Service and is not responsible for the contents of any such linked
+              site. The inclusion of any link does not imply endorsement by
+              Collection Ledger of the site. Use of any such linked website is
+              at the user's own risk.
             </p>
           </section>
 
@@ -153,9 +151,9 @@ export default function TermsOfService() {
             </h2>
             <p className="text-muted-foreground leading-relaxed">
               Collection Ledger may revise these terms of service for its
-              Service at any time without notice. By using this Service, you
-              are agreeing to be bound by the then current version of these
-              terms of service.
+              Service at any time without notice. By using this Service, you are
+              agreeing to be bound by the then current version of these terms of
+              service.
             </p>
           </section>
 
@@ -222,9 +220,15 @@ export default function TermsOfService() {
       <footer className="border-t bg-muted/30 py-12 mt-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Collection Ledger. Made for cable operators.</p>
+            <p>
+              &copy; {new Date().getFullYear()} Collection Ledger. Made for
+              cable operators.
+            </p>
             <div className="flex gap-6 mt-4 sm:mt-0">
-              <Link href="/privacy" className="hover:text-foreground transition">
+              <Link
+                href="/privacy"
+                className="hover:text-foreground transition"
+              >
                 Privacy Policy
               </Link>
               <Link href="/terms" className="hover:text-foreground transition">
