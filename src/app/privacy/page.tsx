@@ -1,6 +1,6 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
   title: "Privacy Policy - Collection Ledger",
@@ -11,9 +11,11 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+      <header className="border-b bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-foreground">Collection Ledger</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            Collection Ledger
+          </h1>
           <Link href="/">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -30,9 +32,7 @@ export default function PrivacyPolicy() {
             <h1 className="text-4xl font-bold text-foreground mb-4">
               Privacy Policy
             </h1>
-            <p className="text-muted-foreground">
-              Last updated: February 2024
-            </p>
+            <p className="text-muted-foreground">Last updated: February 2026</p>
           </div>
 
           <section className="space-y-4">
@@ -133,11 +133,11 @@ export default function PrivacyPolicy() {
               4. Security of Data
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              The security of your data is important to us, but remember that
-              no method of transmission over the Internet or method of
-              electronic storage is 100% secure. While we strive to use
-              commercially acceptable means to protect your Personal Data, we
-              cannot guarantee its absolute security.
+              The security of your data is important to us, but remember that no
+              method of transmission over the Internet or method of electronic
+              storage is 100% secure. While we strive to use commercially
+              acceptable means to protect your Personal Data, we cannot
+              guarantee its absolute security.
             </p>
           </section>
 
@@ -146,10 +146,10 @@ export default function PrivacyPolicy() {
               5. Changes to This Privacy Policy
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              We may update our Privacy Policy from time to time. We will
-              notify you of any changes by posting the new Privacy Policy on
-              this page and updating the "Last updated" date at the top of this
-              Privacy Policy.
+              We may update our Privacy Policy from time to time. We will notify
+              you of any changes by posting the new Privacy Policy on this page
+              and updating the "Last updated" date at the top of this Privacy
+              Policy.
             </p>
           </section>
 
@@ -169,9 +169,15 @@ export default function PrivacyPolicy() {
       <footer className="border-t bg-muted/30 py-12 mt-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Collection Ledger. Made for cable operators.</p>
+            <p>
+              &copy; {new Date().getFullYear()} Collection Ledger. Made for
+              cable operators.
+            </p>
             <div className="flex gap-6 mt-4 sm:mt-0">
-              <Link href="/privacy" className="hover:text-foreground transition">
+              <Link
+                href="/privacy"
+                className="hover:text-foreground transition"
+              >
                 Privacy Policy
               </Link>
               <Link href="/terms" className="hover:text-foreground transition">
