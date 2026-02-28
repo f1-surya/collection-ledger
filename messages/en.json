@@ -94,5 +94,197 @@
     "notPaidReason": "Some connections were left unpaid due to invalid Box number or the connection was already marked as paid.",
     "name": "Name",
     "boxNumber": "Box Number"
+  },
+  "LanguageToggle": {
+    "ariaLabel": "Select language",
+    "english": "English",
+    "tamil": "Tamil"
+  },
+  "HomePage": {
+    "badge": "Built for MSO bulk payments",
+    "heroTitle": "Bulk Payment Collection",
+    "heroHighlight": "Done Right",
+    "heroDescription": "Stop wasting hours on complex MSO portals. Import, track, and submit bulk payments in minutes. Made specifically for cable TV operators in South India.",
+    "signin": "Sign In",
+    "getStarted": "Get Started",
+    "startFreeTrial": "Start Free Trial",
+    "benefitsTitle": "Why Choose Collection Ledger",
+    "benefitsDescription": "Built from the ground up for cable operators who need simplicity and speed",
+    "workflowTitle": "Your New Workflow",
+    "workflowDescription": "From MSO data to bulk payment submission - simplified",
+    "ctaTitle": "Stop Wasting Time on MSO Portals",
+    "ctaDescription": "Collection Ledger is designed by cable operators, for cable operators. Start your free trial today and see the difference.",
+    "startFreeToday": "Start Free Today",
+    "alreadyHaveAccount": "Already Have Account",
+    "footerText": "Made for cable operators.",
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "stats": {
+      "faster": "Faster than MSO portals",
+      "records": "Records processed instantly",
+      "zeroValue": "Zero",
+      "errors": "Data entry errors"
+    },
+    "steps": {
+      "import": {
+        "title": "Import",
+        "description": "Upload data from SCV or other MSO providers"
+      },
+      "track": {
+        "title": "Track",
+        "description": "Monitor customer payments in real-time"
+      },
+      "export": {
+        "title": "Export",
+        "description": "Download and bulk submit to MSO instantly"
+      }
+    },
+    "benefits": {
+      "saveTime": {
+        "title": "Save Hours Daily",
+        "description": "What takes 30+ minutes on MSO portals now takes 2 minutes. Process hundreds of customers instantly."
+      },
+      "bulk": {
+        "title": "Handle Bulk Operations",
+        "description": "Import thousands of customer records at once. Track, update, and export in one place without headaches."
+      },
+      "realtime": {
+        "title": "Real-time Payment Status",
+        "description": "See exactly which customers have paid, are pending, or need follow-up. Clear visibility into your collections."
+      },
+      "secure": {
+        "title": "Secure & Reliable",
+        "description": "Your data is encrypted and backed up. Never lose a payment record or customer information."
+      }
+    },
+    "workflow": {
+      "download": {
+        "title": "Download from MSO Provider",
+        "description": "Export customer data from SCV or your MSO provider portal"
+      },
+      "import": {
+        "title": "Import into Collection Ledger",
+        "description": "Upload the CSV file - we parse it instantly and organize by status"
+      },
+      "track": {
+        "title": "Track Collections in Real-Time",
+        "description": "Update payment status as customers pay. See pending and paid customers at a glance"
+      },
+      "submit": {
+        "title": "Export & Submit to MSO",
+        "description": "Download the formatted list and submit bulk payments back to your MSO provider"
+      }
+    }
+  },
+  "TermsPage": {
+    "backHome": "Back Home",
+    "pageTitle": "Terms of Service",
+    "lastUpdated": "Last updated: February 2026",
+    "footerText": "Made for cable operators.",
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "sections": {
+      "acceptance": {
+        "heading": "1. Acceptance of Terms",
+        "body": "By accessing and using Collection Ledger, you accept and agree to be bound by these terms. If you do not agree, please do not use this service."
+      },
+      "license": {
+        "heading": "2. Use License",
+        "body": "Permission is granted to temporarily use Collection Ledger for personal, non-commercial transitory viewing only. Under this license, you may not:",
+        "list": {
+          "modify": "Modify or copy the materials",
+          "commercial": "Use the materials for commercial purposes or public display",
+          "reverse": "Attempt to decompile or reverse engineer any software on Collection Ledger",
+          "notices": "Remove copyright or other proprietary notices from the materials",
+          "transfer": "Transfer the materials to another person or mirror them on another server"
+        }
+      },
+      "disclaimer": {
+        "heading": "3. Disclaimer",
+        "body": "The materials are provided on an 'as is' basis without warranties of any kind, including implied warranties of merchantability, fitness for a particular purpose, or non-infringement."
+      },
+      "limitations": {
+        "heading": "4. Limitations",
+        "body": "Collection Ledger and its suppliers are not liable for damages, including data loss, profit loss, or business interruption, arising from the use or inability to use the service."
+      },
+      "accuracy": {
+        "heading": "5. Accuracy of Materials",
+        "body": "The service may contain technical or typographical errors. We do not warrant that materials are accurate, complete, or current."
+      },
+      "links": {
+        "heading": "6. Links",
+        "body": "Collection Ledger has not reviewed all linked websites and is not responsible for their content. Including a link does not imply endorsement."
+      },
+      "modifications": {
+        "heading": "7. Modifications",
+        "body": "Collection Ledger may revise these terms at any time without notice. Continued use of the service means you agree to the latest version."
+      },
+      "responsibilities": {
+        "heading": "8. User Responsibilities",
+        "body": "You are responsible for:",
+        "list": {
+          "confidentiality": "Maintaining account confidentiality",
+          "activities": "All activities under your account",
+          "accuracy": "Providing accurate and current information",
+          "compliance": "Complying with all applicable data and collections laws"
+        }
+      },
+      "law": {
+        "heading": "9. Governing Law",
+        "body": "These terms are governed by the laws of India, and you submit to the exclusive jurisdiction of courts in India."
+      },
+      "contact": {
+        "heading": "10. Contact Information",
+        "body": "If you have questions about these terms, contact support@collectionledger.com."
+      }
+    }
+  },
+  "PrivacyPage": {
+    "backHome": "Back Home",
+    "pageTitle": "Privacy Policy",
+    "lastUpdated": "Last updated: February 2026",
+    "footerText": "Made for cable operators.",
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "sections": {
+      "introduction": {
+        "heading": "1. Introduction",
+        "body": "Collection Ledger (\"we\", \"our\", or \"us\") operates the Collection Ledger application. This page explains how we collect, use, and disclose personal data when you use our service."
+      },
+      "collection": {
+        "heading": "2. Information Collection and Use",
+        "body": "We collect different types of information to provide and improve our service.",
+        "subHeading": "Types of Data Collected",
+        "list": {
+          "personal": "Personal Data: Email address, name, and other contact information",
+          "customer": "Customer Data: Payment records, collection status, and financial information you upload",
+          "usage": "Usage Data: Information about your use of our service, including IP address, browser type, and visited pages",
+          "cookies": "Cookies: Used to remember your preferences"
+        }
+      },
+      "usage": {
+        "heading": "3. Use of Data",
+        "body": "Collection Ledger uses collected data to:",
+        "list": {
+          "provide": "Provide and maintain the service",
+          "notify": "Notify you about service changes",
+          "features": "Enable interactive features",
+          "support": "Provide support",
+          "improve": "Analyze and improve product quality"
+        }
+      },
+      "security": {
+        "heading": "4. Security of Data",
+        "body": "We value your data security, but no internet transmission or electronic storage method is 100% secure. We use commercially acceptable safeguards but cannot guarantee absolute security."
+      },
+      "changes": {
+        "heading": "5. Changes to This Privacy Policy",
+        "body": "We may update this policy from time to time. Any changes will be posted on this page with an updated revision date."
+      },
+      "contact": {
+        "heading": "6. Contact Us",
+        "body": "If you have questions about this privacy policy, contact support@collectionledger.com."
+      }
+    }
   }
 }
