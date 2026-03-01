@@ -55,12 +55,7 @@ export default async function Home() {
           <div className="flex items-center gap-2">
             <Image alt="app icon" src="/icon0.svg" height={35} width={35} />
           </div>
-          <div className="flex items-center gap-3">
-            <LanguageToggle className="w-[130px]" />
-            <Link href="/signup">
-              <Button>{t("getStarted")}</Button>
-            </Link>
-          </div>
+          <LanguageToggle className="w-[130px]" />
         </div>
       </nav>
 
@@ -74,7 +69,7 @@ export default async function Home() {
               </span>
             </div>
             <div className="space-y-4">
-              <h1 className="text-xl leading-tight sm:text-5xl line font-bold text-foreground">
+              <h1 className="text-4xl leading-tight line font-bold text-foreground">
                 {t("heroTitle")}
                 <span className="block text-primary">{t("heroHighlight")}</span>
               </h1>
