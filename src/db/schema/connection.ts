@@ -61,6 +61,14 @@ export const connections = pgTable(
     index("connection_id_index").on(table.id),
     index("connection_org_boxNumber_index").on(table.org, table.boxNumber),
     index("connection_org_name_index").on(table.org, table.name),
+    index("connection_name_trgm_idx").using(
+      "gin",
+      table.name.op("gin_trgm_ops"),
+    ),
+    index("connection_boxnumber_trgm_idx").using(
+      "gin",
+      table.boxNumber.op("gin_trgm_ops"),
+    ),
   ],
 );
 
