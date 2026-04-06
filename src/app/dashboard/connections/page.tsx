@@ -1,4 +1,4 @@
-import { and, eq, ilike, or, type SQL } from "drizzle-orm";
+import { and, eq, ilike, or } from "drizzle-orm";
 import { TvMinimal } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -25,16 +25,18 @@ export default async function ConnectionsPage({
     getTranslations("Connections"),
   ]);
 
-  let filter: SQL | undefined = eq(connections.org, org.id);
-  if (search && search.length > 0) {
-    filter = and(
-      eq(connections.org, org.id),
-      or(
-        ilike(connections.name, `%${search.trim().toUpperCase()}%`),
-        ilike(connections.boxNumber, `%${search.trim().toUpperCase()}%`),
-      ),
-    );
-  }
+  const q = search?.trim();
+  const hasSearch = Boolean(q);
+  const trimmed = search?.trim();
+  const filter = hasSearch
+    ? and(
+        eq(connections.org, org.id),
+        or(
+          ilike(connections.name, `%${trimmed}%`),
+          ilike(connections.boxNumber, `%${trimmed}%`),
+        ),
+      )
+    : eq(connections.org, org.id);
 
   const count = await db.$count(connections, filter);
 
