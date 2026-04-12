@@ -123,6 +123,7 @@ export default function ConnectionsList({
   const { replace } = useRouter();
   const handleSearch = useDebouncedCallback((term) => {
     const params = new URLSearchParams(searchParams);
+    params.delete("page");
     if (term) {
       params.set("search", term);
     } else {
