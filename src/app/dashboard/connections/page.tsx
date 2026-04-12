@@ -17,7 +17,7 @@ import CreateConnection from "./_components/create";
 export default async function ConnectionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; page?: number }>;
+  searchParams: Promise<{ search?: string; page?: string }>;
 }) {
   const { search, page } = await searchParams;
   const [org, t] = await Promise.all([
@@ -38,9 +38,14 @@ export default async function ConnectionsPage({
       )
     : eq(connections.org, org.id);
 
-  const count = await db.$count(connections, filter);
+  const perPage = 20;
+  const parsedPage = Number(page);
+  const requestedPage =
+    Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
 
-  if (count === 0 && !(page || searchParams)) {
+  const count = hasSearch ? undefined : await db.$count(connections, filter);
+
+  if (!hasSearch && count === 0 && !page) {
     return (
       <Empty>
         <EmptyHeader>
@@ -54,13 +59,15 @@ export default async function ConnectionsPage({
     );
   }
 
-  const maxPages = Math.ceil(count / 20);
+  const maxPages = hasSearch
+    ? Number.POSITIVE_INFINITY
+    : Math.max(1, Math.ceil((count ?? 0) / perPage));
 
-  let currPage = Math.min(page ?? 1, maxPages) - 1;
+  let currPage = Math.min(requestedPage, maxPages) - 1;
   if (currPage < 0) {
     currPage = 0;
   }
-  const conns = await db
+  const rows = await db
     .select({
       id: connections.id,
       name: connections.name,
@@ -83,13 +90,22 @@ export default async function ConnectionsPage({
     .innerJoin(basePacks, eq(connections.basePack, basePacks.id))
     .where(filter)
     .orderBy(connections.name)
-    .limit(20)
-    .offset(currPage * 20);
+    .limit(hasSearch ? perPage + 1 : perPage)
+    .offset(currPage * perPage);
+
+  const hasNextPage = hasSearch && rows.length > perPage;
+  const conns = hasNextPage ? rows.slice(0, perPage) : rows;
+  const effectiveMaxPages = hasSearch
+    ? currPage + (hasNextPage ? 2 : 1)
+    : maxPages;
 
   return (
     <main className="p-4">
       <Suspense fallback={<ConnectionsSkeleton />}>
-        <Connections connections={conns} pages={Math.round(maxPages)} />
+        <Connections
+          connections={conns}
+          pages={Math.round(effectiveMaxPages)}
+        />
       </Suspense>
     </main>
   );

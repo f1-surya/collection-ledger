@@ -68,7 +68,8 @@ export default function ConnectionTable({ data, pages }: DataTableProps) {
   const { replace } = useRouter();
   const handleSearch = useDebouncedCallback((term) => {
     const params = new URLSearchParams(searchParams);
-    if (term) {
+    params.delete("page");
+    if (term && term.length > 2) {
       params.set("search", term);
     } else {
       params.delete("search");
