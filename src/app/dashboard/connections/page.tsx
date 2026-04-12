@@ -1,4 +1,4 @@
-import { and, eq, ilike, or } from "drizzle-orm";
+import { and, eq, ilike, or, sql } from "drizzle-orm";
 import { TvMinimal } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
@@ -13,6 +13,42 @@ import { areas, basePacks, connections } from "@/db/schema";
 import { getOrg } from "@/lib/get-org";
 import Connections, { ConnectionsSkeleton } from "./_components/connections";
 import CreateConnection from "./_components/create";
+
+const prepared = db
+  .select({
+    id: connections.id,
+    name: connections.name,
+    boxNumber: connections.boxNumber,
+    lastPayment: connections.lastPayment,
+    phoneNumber: connections.phoneNumber,
+    area: {
+      id: areas.id,
+      name: areas.name,
+    },
+    basePack: {
+      id: basePacks.id,
+      name: basePacks.name,
+      lcoPrice: basePacks.lcoPrice,
+      customerPrice: basePacks.customerPrice,
+    },
+  })
+  .from(connections)
+  .innerJoin(areas, eq(connections.area, areas.id))
+  .innerJoin(basePacks, eq(connections.basePack, basePacks.id))
+  .where(
+    and(
+      eq(connections.org, sql.placeholder("orgId")),
+      or(
+        sql`${sql.placeholder("search")}::text is null`,
+        ilike(connections.name, sql.placeholder("search")),
+        ilike(connections.boxNumber, sql.placeholder("search")),
+      ),
+    ),
+  )
+  .orderBy(connections.name)
+  .limit(sql.placeholder("limit"))
+  .offset(sql.placeholder("offset"))
+  .prepare("connections");
 
 export default async function ConnectionsPage({
   searchParams,
@@ -67,31 +103,12 @@ export default async function ConnectionsPage({
   if (currPage < 0) {
     currPage = 0;
   }
-  const rows = await db
-    .select({
-      id: connections.id,
-      name: connections.name,
-      boxNumber: connections.boxNumber,
-      lastPayment: connections.lastPayment,
-      phoneNumber: connections.phoneNumber,
-      area: {
-        id: areas.id,
-        name: areas.name,
-      },
-      basePack: {
-        id: basePacks.id,
-        name: basePacks.name,
-        lcoPrice: basePacks.lcoPrice,
-        customerPrice: basePacks.customerPrice,
-      },
-    })
-    .from(connections)
-    .innerJoin(areas, eq(connections.area, areas.id))
-    .innerJoin(basePacks, eq(connections.basePack, basePacks.id))
-    .where(filter)
-    .orderBy(connections.name)
-    .limit(hasSearch ? perPage + 1 : perPage)
-    .offset(currPage * perPage);
+  const rows = await prepared.execute({
+    orgId: org.id,
+    search: hasSearch ? `%${trimmed}%` : null,
+    limit: hasSearch ? perPage + 1 : perPage,
+    offset: currPage * perPage,
+  });
 
   const hasNextPage = hasSearch && rows.length > perPage;
   const conns = hasNextPage ? rows.slice(0, perPage) : rows;

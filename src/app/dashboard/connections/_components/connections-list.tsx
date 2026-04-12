@@ -130,7 +130,7 @@ export default function ConnectionsList({
       params.delete("search");
     }
     replace(`${pathname}?${params.toString()}`);
-  }, 250);
+  }, 300);
   const t = useTranslations("Connections");
   const { selected, setSelected, clear } = useConnectionsSelection();
 
