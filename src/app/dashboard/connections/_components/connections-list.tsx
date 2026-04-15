@@ -173,10 +173,17 @@ export default function ConnectionsList({
               <ConnectionCard
                 connection={connection}
                 onClick={showConnection}
-                isSelected={Boolean(selected[connection.boxNumber])}
-                onSelect={(val) =>
-                  setSelected({ ...selected, [connection.boxNumber]: val })
-                }
+                isSelected={selected[connection.boxNumber]}
+                onSelect={(val) => {
+                  setSelected((prev) => {
+                    if (val) {
+                      return { ...prev, [connection.boxNumber]: val };
+                    }
+
+                    const { [connection.boxNumber]: _, ...rest } = prev;
+                    return rest;
+                  });
+                }}
               />
               {i !== 19 && <Separator />}
             </div>
