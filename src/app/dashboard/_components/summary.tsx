@@ -1,4 +1,4 @@
-import { startOfMonth, subDays } from "date-fns";
+import { startOfMonth, subMonths } from "date-fns";
 import { eq, sql } from "drizzle-orm";
 import { AlertTriangle, TrendingUp, Users, Wallet } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,18 +28,18 @@ export function SummarySkeleton() {
 }
 
 export async function Summary({ orgId }: { orgId: string }) {
-  const thirtyDaysAgo = subDays(new Date(), 30);
+  const lastMonth = subMonths(startOfMonth(new Date()), 1);
   const start = startOfMonth(new Date());
 
   const res = await db
     .select({
       totalConnections: sql<number>`count(*)`.mapWith(Number),
       activeConnections:
-        sql<number>`count(case when ${connections.lastPayment} >= ${thirtyDaysAgo} then 1 end)`.mapWith(
+        sql<number>`count(case when ${connections.lastPayment} >= ${lastMonth} then 1 end)`.mapWith(
           Number,
         ),
       overduePayments:
-        sql<number>`count(case when ${connections.lastPayment} <= ${thirtyDaysAgo} or ${connections.lastPayment} is null then 1 end)`.mapWith(
+        sql<number>`count(case when ${connections.lastPayment} <= ${lastMonth} or ${connections.lastPayment} is null then 1 end)`.mapWith(
           Number,
         ),
       monthlyRevenue: sql<number>`(
@@ -73,7 +73,7 @@ export async function Summary({ orgId }: { orgId: string }) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
-            Active Connections
+            Paid Connections
           </CardTitle>
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>

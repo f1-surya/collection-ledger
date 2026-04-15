@@ -85,7 +85,7 @@
     "companyDescription": "கம்பெனி தகவலை திருத்துங்கள்."
   },
   "BulkPay": {
-    "selectedConnections": "{count, plural, =1 {1 இணைப்பு} other {# இணைப்புகள்}} மொத்த கட்டணத்துக்கு தேர்வு செய்யப்பட்டது",
+    "selectedConnections": "{count, plural, =1 {1 இணைப்பு} other {# இணைப்புகள்}}",
     "payNow": "இப்போ கட்டணம் செலுத்து",
     "clearSelection": "தேர்வை அழி",
     "confirmClear": "தேர்வை அழிக்கவா?",

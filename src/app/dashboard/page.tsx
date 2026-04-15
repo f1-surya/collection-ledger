@@ -2,6 +2,10 @@ import { Suspense } from "react";
 import { QuickActions } from "@/components/quick-actions";
 import { getOrg } from "@/lib/get-org";
 import {
+  MonthlyPackPayments,
+  MonthlyPackPaymentsSkeleton,
+} from "./_components/monthly-pack-payments";
+import {
   LoadingRecentPayments,
   RecentPayments,
 } from "./_components/recent-payments";
@@ -15,6 +19,9 @@ export default async function Dashboard() {
       <QuickActions />
       <Suspense fallback={<SummarySkeleton />}>
         <Summary orgId={org.id} />
+      </Suspense>
+      <Suspense fallback={<MonthlyPackPaymentsSkeleton />}>
+        <MonthlyPackPayments orgId={org.id} />
       </Suspense>
       <Suspense fallback={<LoadingRecentPayments />}>
         <RecentPayments orgId={org.id} />

@@ -85,7 +85,7 @@
     "companyDescription": "Edit your compnay's information"
   },
   "BulkPay": {
-    "selectedConnections": "{count, plural, =1 {1 connection} other {# connections}} selected for bulk payment",
+    "selectedConnections": "{count, plural, =1 {1 connection} other {# connections}} selected",
     "payNow": "Pay Now",
     "clearSelection": "Clear Selection",
     "confirmClear": "Confirm Clear Selection",
