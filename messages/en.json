@@ -16,6 +16,22 @@
     "profile": "Profile",
     "settings": "Settings"
   },
+  "Dashboard": {
+    "title": "Dashboard",
+    "quickActionsTitle": "Quick Actions",
+    "addNewConnection": "Add New Connection",
+    "exportPaymentsThisMonth": "Export Payments for This Month",
+    "searchPlaceholder": "Enter Box Number or Name",
+    "totalConnections": "Total Connections",
+    "paidConnections": "Paid Connections",
+    "ofTotal": "{percent}% of total.",
+    "monthlyRevenue": "Monthly Revenue",
+    "inactiveConnections": "Inactive Connections",
+    "requiresAttention": "Requires attention",
+    "paymentsByPack": "Payments by Pack ({month})",
+    "noPaymentsThisMonth": "No payments recorded this month yet.",
+    "recentPayments": "Recent Payments"
+  },
   "Connections": {
     "noConnections": "You don't have any connections yet.",
     "noConnectionsForQuery": "Couldn't find any connections for your query."

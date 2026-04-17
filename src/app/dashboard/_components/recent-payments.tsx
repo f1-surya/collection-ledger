@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { desc, eq, sql } from "drizzle-orm";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -46,6 +47,7 @@ export function LoadingRecentPayments() {
 }
 
 export async function RecentPayments({ orgId }: { orgId: string }) {
+  const t = await getTranslations("Dashboard");
   const recentPayments = await db
     .select({
       id: payments.id,
@@ -66,7 +68,7 @@ export async function RecentPayments({ orgId }: { orgId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Payments</CardTitle>
+        <CardTitle>{t("recentPayments")}</CardTitle>
         <CardAction>
           <Link href="/dashboard/payments-history">
             <Button size="icon">

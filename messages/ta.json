@@ -16,6 +16,22 @@
     "profile": "சுயவிவரம்",
     "settings": "அமைப்புகள்"
   },
+  "Dashboard": {
+    "title": "டாஷ்போர்டு",
+    "quickActionsTitle": "விரைவு செயல்கள்",
+    "addNewConnection": "புதிய இணைப்பு சேர்",
+    "exportPaymentsThisMonth": "இந்த மாத கட்டணங்களை ஏற்றுமதி செய்",
+    "searchPlaceholder": "பாக்ஸ் எண் அல்லது பெயரை உள்ளிடுங்கள்",
+    "totalConnections": "மொத்த இணைப்புகள்",
+    "paidConnections": "கட்டணம் செலுத்திய இணைப்புகள்",
+    "ofTotal": "மொத்தத்தில் {percent}%",
+    "monthlyRevenue": "மாத வருமானம்",
+    "inactiveConnections": "செயலற்ற இணைப்புகள்",
+    "requiresAttention": "கவனம் தேவை",
+    "paymentsByPack": "பேக் அடிப்படையிலான கட்டணங்கள் ({month})",
+    "noPaymentsThisMonth": "இந்த மாதத்திற்கு இன்னும் கட்டண பதிவுகள் இல்லை.",
+    "recentPayments": "சமீபத்திய கட்டணங்கள்"
+  },
   "Connections": {
     "noConnections": "இன்னும் எந்த இணைப்பும் சேர்க்கப்படவில்லை.",
     "noConnectionsForQuery": "இந்த தேடலுக்கு பொருந்தும் இணைப்புகள் கிடைக்கவில்லை."
