@@ -36,6 +36,31 @@ export const basePacks = pgTable(
   (table) => [index("org_base_pack_index").on(table.org)],
 );
 
+export const addons = pgTable(
+  "addons",
+  {
+    id: text().primaryKey(),
+    name: text().notNull(),
+    lcoPrice: integer().notNull(),
+    customerPrice: integer().notNull(),
+    org: text("organization_id")
+      .notNull()
+      .references(() => organization.id),
+  },
+  (table) => [index("org_addons_index").on(table.org)],
+);
+
+export const connectionAddons = pgTable("connection_addons", {
+  id: text().primaryKey(),
+  connectionId: text()
+    .notNull()
+    .references(() => connections.id),
+  addonId: text()
+    .notNull()
+    .references(() => addons.id),
+  createdAt: timestamp({ withTimezone: true }).defaultNow(),
+});
+
 export const connections = pgTable(
   "connection",
   {
@@ -72,17 +97,6 @@ export const connections = pgTable(
   ],
 );
 
-export const connectionsRelations = relations(connections, ({ one }) => ({
-  area: one(areas, {
-    fields: [connections.area],
-    references: [areas.id],
-  }),
-  basePack: one(basePacks, {
-    fields: [connections.basePack],
-    references: [basePacks.id],
-  }),
-}));
-
 export const payments = pgTable(
   "payments",
   {
@@ -118,6 +132,28 @@ export const payments = pgTable(
     ),
   ],
 );
+
+export const connectionAddonsRelations = relations(
+  connectionAddons,
+  ({ one }) => ({
+    connection: one(connections, {
+      fields: [connectionAddons.connectionId],
+      references: [connections.id],
+    }),
+  }),
+);
+
+export const connectionsRelations = relations(connections, ({ one, many }) => ({
+  area: one(areas, {
+    fields: [connections.area],
+    references: [areas.id],
+  }),
+  basePack: one(basePacks, {
+    fields: [connections.basePack],
+    references: [basePacks.id],
+  }),
+  connectionAddons: many(connectionAddons),
+}));
 
 export const paymentRelations = relations(payments, ({ one }) => ({
   connection: one(connections, {
