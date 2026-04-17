@@ -1,5 +1,6 @@
-import { endOfMonth, format, startOfMonth } from "date-fns";
+import { format, startOfMonth } from "date-fns";
 import { and, between, count, desc, eq } from "drizzle-orm";
+import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +36,7 @@ export async function MonthlyPackPayments({ orgId }: { orgId: string }) {
   const now = new Date();
   const start = startOfMonth(now);
   const paymentCount = count(payments.id);
+  const t = await getTranslations("Dashboard");
 
   const monthlyPackPayments = await db
     .select({
@@ -63,12 +65,14 @@ export async function MonthlyPackPayments({ orgId }: { orgId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Payments by Pack ({format(start, "MMM yyyy")})</CardTitle>
+        <CardTitle>
+          {t("paymentsByPack", { month: format(start, "MMM yyyy") })}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         {monthlyPackPayments.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No payments recorded this month yet.
+            {t("noPaymentsThisMonth")}
           </p>
         ) : (
           <div className="space-y-4">

@@ -1,6 +1,7 @@
 import { startOfMonth, subMonths } from "date-fns";
 import { eq, sql } from "drizzle-orm";
 import { AlertTriangle, TrendingUp, Users, Wallet } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { db } from "@/db/drizzle";
@@ -30,6 +31,7 @@ export function SummarySkeleton() {
 export async function Summary({ orgId }: { orgId: string }) {
   const lastMonth = subMonths(startOfMonth(new Date()), 1);
   const start = startOfMonth(new Date());
+  const t = await getTranslations("Dashboard");
 
   const res = await db
     .select({
@@ -62,7 +64,7 @@ export async function Summary({ orgId }: { orgId: string }) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
-            Total Connections
+            {t("totalConnections")}
           </CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
@@ -73,23 +75,27 @@ export async function Summary({ orgId }: { orgId: string }) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
-            Paid Connections
+            {t("paidConnections")}
           </CardTitle>
           <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{activeConnections}</div>
           <p className="text-xs text-muted-foreground">
-            {totalConnections > 0
-              ? ((activeConnections / totalConnections) * 100).toFixed()
-              : 0}
-            % of total.
+            {t("ofTotal", {
+              percent:
+                totalConnections > 0
+                  ? ((activeConnections / totalConnections) * 100).toFixed()
+                  : 0,
+            })}
           </p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            {t("monthlyRevenue")}
+          </CardTitle>
           <Wallet className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -101,13 +107,15 @@ export async function Summary({ orgId }: { orgId: string }) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
-            Inactive Connections
+            {t("inactiveConnections")}
           </CardTitle>
           <AlertTriangle className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{overduePayments}</div>
-          <p className="text-xs text-muted-foreground">Requires attention</p>
+          <p className="text-xs text-muted-foreground">
+            {t("requiresAttention")}
+          </p>
         </CardContent>
       </Card>
     </div>
