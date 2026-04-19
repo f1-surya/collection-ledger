@@ -2,8 +2,9 @@
 
 import { Package, PencilLine, Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { type FormEvent, useState } from "react";
+import { type SyntheticEvent, useState } from "react";
 import { toast } from "sonner";
+import { createNewAddon, deleteAddon, updateAddon } from "@/actions/addons";
 import { FormField } from "@/components/forms/formfield";
 import {
   AlertDialog,
@@ -50,47 +51,34 @@ export default function AddonList({
   const [addonToEdit, setAddonToEdit] = useState<Addon | null>(null);
   const t = useTranslations("Addon");
 
-  const saveAddon = async (e: FormEvent<HTMLFormElement>) => {
+  const saveAddon = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const body = new FormData(e.currentTarget);
-    const prom = fetch("/api/addons", { method: "POST", body });
-    toast.promise(prom, {
-      loading: "Saving addon...",
-      success: `${body.get("name")} has been saved`,
-      error: "Something went wrong.",
-    });
-
-    const res = await prom;
-    if (res.status === 400) {
-      const error = await res.json();
-      toast.error(error.message);
-    } else if (res.ok) {
-      const newAddon = await res.json();
+    const currT = toast.loading("Saving addon...");
+    const res = await createNewAddon(Object.fromEntries(body.entries()));
+    if (!res.success) {
+      toast.error(res.error, { id: currT });
+    } else {
+      const newAddon = res.data;
       const newAddons: Addon[] = [...addons, newAddon];
+      toast.success("Addon saved successfully", { id: currT });
       setAddons(newAddons.sort((a, b) => a.name.localeCompare(b.name)));
       setCreateAddon(false);
     }
   };
 
-  const editAddon = async (e: FormEvent<HTMLFormElement>) => {
+  const editAddon = async (e: SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const body = new FormData(e.currentTarget);
-    const prom = fetch("/api/addons", { method: "PUT", body });
+    const currT = toast.loading("Saving addon...");
+    const res = await updateAddon(Object.fromEntries(body.entries()));
 
-    toast.promise(prom, {
-      loading: "Saving addon...",
-      success: `${body.get("name")} has been saved`,
-      error: "Something went wrong.",
-    });
-
-    const res = await prom;
-    if (res.status === 400) {
-      const error = await res.json();
-      toast.error(error.message);
+    if (!res.success) {
+      toast.error(res.error, { id: currT });
     } else {
-      const updatedAddon = await res.json();
+      const updatedAddon = res.data;
       if (!addonToEdit) return;
 
       setAddons((prev) =>
@@ -99,27 +87,24 @@ export default function AddonList({
         ),
       );
       setAddonToEdit(null);
+      toast.success("Addon updated successfully", { id: currT });
     }
   };
 
-  const deleteAddon = async () => {
+  const deleteCurAddon = async () => {
     if (!addonToDelete) return;
 
-    const prom = fetch(`/api/addons?id=${addonToDelete.id}`, {
-      method: "DELETE",
-    });
-    toast.promise(prom, {
-      loading: "Deleting addon...",
-      success: `${addonToDelete.name} has been deleted`,
-      error: "Something went wrong",
-    });
+    const res = await deleteAddon(addonToDelete.id);
+    const toastId = toast.loading("Deleting addon...");
 
-    const res = await prom;
-    if (res.ok) {
+    if (res.success) {
+      toast.success("Addon deleted successfully", { id: toastId });
       setAddons((prev) =>
         prev.filter((addon) => addon.id !== addonToDelete.id),
       );
       setAddonToDelete(null);
+    } else {
+      toast.error(res.error, { id: toastId });
     }
   };
 
@@ -226,7 +211,7 @@ export default function AddonList({
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <form action={deleteAddon}>
+          <form action={deleteCurAddon}>
             <input name="id" type="hidden" value={addonToDelete?.id} />
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>

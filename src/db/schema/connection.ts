@@ -58,6 +58,9 @@ export const connectionAddons = pgTable("connection_addons", {
   addonId: text()
     .notNull()
     .references(() => addons.id),
+  org: text()
+    .notNull()
+    .references(() => organization.id),
   createdAt: timestamp({ withTimezone: true }).defaultNow(),
 });
 

@@ -1,4 +1,4 @@
-import { getAddons } from "@/lib/addons";
+import { getAddons } from "@/actions/addons";
 import AddonList from "./_components/addons";
 
 export default async function Addons() {
