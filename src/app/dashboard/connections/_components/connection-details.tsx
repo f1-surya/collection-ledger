@@ -44,9 +44,9 @@ export default function ConnectionDetails({
   const paidThisMonth = connection.lastPayment
     ? isThisMonth(connection.lastPayment)
     : false;
-  const hasAddons =
-    connection.addonPrices > 0 || connection.addonLcoPrices > 0;
-  const totalLcoPrice = connection.basePack.lcoPrice + connection.addonLcoPrices;
+  const hasAddons = connection.addonPrices > 0 || connection.addonLcoPrices > 0;
+  const totalLcoPrice =
+    connection.basePack.lcoPrice + connection.addonLcoPrices;
   const totalCustomerPrice =
     connection.basePack.customerPrice + connection.addonPrices;
 
@@ -73,6 +73,11 @@ export default function ConnectionDetails({
     toast.success("Successfully marked as paid");
   };
 
+  const copyBoxNumber = () => {
+    navigator.clipboard.writeText(connection.boxNumber);
+    toast.info("Box number copied to the clipboard");
+  };
+
   return (
     <Dialog
       open={connection !== undefined}
@@ -82,13 +87,16 @@ export default function ConnectionDetails({
         <DialogHeader className="flex flex-row justify-between">
           <div className="text-start">
             <DialogTitle className="text-xl">{connection.name}</DialogTitle>
-            <DialogDescription
-              className="cursor-pointer hover:text-foreground transition-colors"
-              onClick={() =>
-                navigator.clipboard.writeText(connection.boxNumber)
-              }
-            >
+            <DialogDescription className="cursor-pointer hover:text-foreground transition-colors">
               SMC #{connection.boxNumber}
+              <Button
+                variant="secondary"
+                size="sm"
+                className="ml-3"
+                onClick={copyBoxNumber}
+              >
+                <Copy />
+              </Button>
             </DialogDescription>
           </div>
           <Link href={`/dashboard/connections/${connection.boxNumber}`}>

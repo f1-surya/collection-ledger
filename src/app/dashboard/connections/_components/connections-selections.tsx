@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function useConnectionsSelection() {
   const [selected, setSelected] = useState<{ [key: string]: boolean }>({});
@@ -65,6 +66,7 @@ export function BulkPay({
   const [notPaidCons, setNotPaidCons] = useState<string[][]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
+  const isMobile = useIsMobile();
   const t = useTranslations("BulkPay");
 
   const handlePayNow = async () => {
@@ -106,7 +108,7 @@ export function BulkPay({
   return (
     <>
       {smcs.length > 0 && (
-        <ActionBar open={smcs.length > 0}>
+        <ActionBar open={smcs.length > 0} side={isMobile ? "bottom" : "top"}>
           <ActionBarSelection>
             {t("selectedConnections", { count: smcs.length })}
           </ActionBarSelection>
