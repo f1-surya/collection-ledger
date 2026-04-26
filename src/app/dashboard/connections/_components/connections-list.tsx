@@ -93,7 +93,9 @@ const ConnectionCard = ({
         </div>
         <div className="flex justify-between text-sm">
           <p>{connection.basePack.name}</p>
-          <p>MRP: ₹{connection.basePack.customerPrice}</p>
+          <p>
+            MRP: ₹{connection.basePack.customerPrice + connection.addonPrices}
+          </p>
         </div>
       </button>
     </div>

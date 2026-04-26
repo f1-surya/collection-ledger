@@ -1,6 +1,6 @@
 {
-  "id": "eac8d2ca-8e33-4dab-916c-991223121fa2",
-  "prevId": "eeec5416-0b74-48e1-9e2e-93dbc89229eb",
+  "id": "0da818a5-7a56-4025-a332-b1e2731b501b",
+  "prevId": "eac8d2ca-8e33-4dab-916c-991223121fa2",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -627,6 +627,75 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.addons": {
+      "name": "addons",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lcoPrice": {
+          "name": "lcoPrice",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "customerPrice": {
+          "name": "customerPrice",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "organization_id": {
+          "name": "organization_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "org_addons_index": {
+          "name": "org_addons_index",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "addons_organization_id_organization_id_fk": {
+          "name": "addons_organization_id_organization_id_fk",
+          "tableFrom": "addons",
+          "tableTo": "organization",
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.areas": {
       "name": "areas",
       "schema": "",
@@ -742,6 +811,63 @@
           "tableFrom": "base_packs",
           "tableTo": "organization",
           "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.connection_addons": {
+      "name": "connection_addons",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "connectionId": {
+          "name": "connectionId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "addonId": {
+          "name": "addonId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "connection_addons_connectionId_connection_id_fk": {
+          "name": "connection_addons_connectionId_connection_id_fk",
+          "tableFrom": "connection_addons",
+          "tableTo": "connection",
+          "columnsFrom": ["connectionId"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "connection_addons_addonId_addons_id_fk": {
+          "name": "connection_addons_addonId_addons_id_fk",
+          "tableFrom": "connection_addons",
+          "tableTo": "addons",
+          "columnsFrom": ["addonId"],
           "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"

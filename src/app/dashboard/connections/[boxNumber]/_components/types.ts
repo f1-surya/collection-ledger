@@ -6,6 +6,12 @@ export interface Payment {
   date: Date;
   customerPrice: number;
   lcoPrice: number;
+  items: {
+    id: string;
+    name: string;
+    lcoPrice: number;
+    customerPrice: number;
+  }[];
   currentPack: BasePack;
   to: BasePack | null;
   connection: { name: string };

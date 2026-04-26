@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { db } from "@/db/drizzle";
-import { connections } from "@/db/schema";
+import { addons, connectionAddons, connections } from "@/db/schema";
 import { getOrg } from "@/lib/get-org";
 import { Details } from "./_components/details";
 
@@ -56,5 +56,53 @@ export default async function ConnectionInfo({
     );
   }
 
-  return <Details currConnection={connection} />;
+  const [availableAddons, connectedAddons] = await Promise.all([
+    db.query.addons.findMany({
+      where: eq(addons.org, org.id),
+      columns: {
+        id: true,
+        name: true,
+        lcoPrice: true,
+        customerPrice: true,
+      },
+      orderBy: (addon, { asc }) => [asc(addon.name)],
+    }),
+    db
+      .select({
+        id: connectionAddons.id,
+        addon: {
+          id: addons.id,
+          name: addons.name,
+          lcoPrice: addons.lcoPrice,
+          customerPrice: addons.customerPrice,
+        },
+      })
+      .from(connectionAddons)
+      .innerJoin(addons, eq(addons.id, connectionAddons.addon))
+      .where(
+        and(
+          eq(connectionAddons.org, org.id),
+          eq(connectionAddons.connection, connection.id),
+        ),
+      )
+      .orderBy(addons.name),
+  ]);
+
+  return (
+    <Details
+      currConnection={{
+        ...connection,
+        addonPrices: connectedAddons.reduce(
+          (acc, c) => acc + c.addon.customerPrice,
+          0,
+        ),
+        addonLcoPrices: connectedAddons.reduce(
+          (acc, c) => acc + c.addon.lcoPrice,
+          0,
+        ),
+      }}
+      addons={availableAddons}
+      connectionAddons={connectedAddons}
+    />
+  );
 }
