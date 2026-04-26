@@ -1,6 +1,6 @@
 "use client";
 
-import { LoaderCircle, Plus, Puzzle, Trash2 } from "lucide-react";
+import { Blocks, LoaderCircle, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { connectAddon, removeAddon } from "@/actions/addons";
@@ -142,7 +142,7 @@ export default function ConnectionAddons({
     <Card className="flex-1 h-fit">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Puzzle size={20} /> Addons
+          <Blocks size={20} /> Addons
         </CardTitle>
         <CardDescription>
           Manage optional addons for this connection

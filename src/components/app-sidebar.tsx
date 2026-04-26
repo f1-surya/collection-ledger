@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Blocks,
   Cable,
   ChevronRight,
   History,
@@ -53,7 +54,7 @@ const links = [
   },
   {
     name: "addons",
-    icon: Package,
+    icon: Blocks,
     href: "/dashboard/addons",
   },
   {
