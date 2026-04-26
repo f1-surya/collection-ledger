@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   insert: vi.fn(),
   update: vi.fn(),
   transaction: vi.fn(),
+  connectionAddonsFindMany: vi.fn(),
   getOrg: vi.fn(() => Promise.resolve({ id: "org-123" })),
   nanoid: vi.fn(() => "payment-123"),
   isThisMonth: vi.fn(),
@@ -20,6 +21,11 @@ vi.mock("@/db/drizzle", () => ({
     insert: mocks.insert,
     update: mocks.update,
     transaction: mocks.transaction,
+    query: {
+      connectionAddons: {
+        findMany: mocks.connectionAddonsFindMany,
+      },
+    },
   },
 }));
 
@@ -75,7 +81,8 @@ describe("POST /api/payment/bulk", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.transaction.mockImplementation((fn: (tx: any) => Promise<void>) =>
+    mocks.connectionAddonsFindMany.mockResolvedValue([]);
+    mocks.transaction.mockImplementation((fn: (tx: unknown) => Promise<void>) =>
       fn({
         update: mocks.update,
         insert: mocks.insert,

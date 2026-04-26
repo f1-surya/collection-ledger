@@ -10,4 +10,4 @@ A web version of the collection ledger lite app.
 - [x] Data import and export.
 - [x] Settings page.
 - [x] Profile and Company page.
-- [ ] Dashboard stats
+- [x] Dashboard stats

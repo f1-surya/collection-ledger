@@ -52,6 +52,11 @@ const links = [
     href: "/dashboard/base-packs",
   },
   {
+    name: "addons",
+    icon: Package,
+    href: "/dashboard/addons",
+  },
+  {
     name: "areas",
     icon: LandPlot,
     href: "/dashboard/areas",

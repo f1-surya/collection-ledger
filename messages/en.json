@@ -12,6 +12,7 @@
     "connections": "Connections",
     "paymentHistory": "Payment history",
     "packs": "Base packs",
+    "addons": "Addons",
     "areas": "Areas",
     "profile": "Profile",
     "settings": "Settings"
@@ -63,6 +64,20 @@
     "editTitle": "Rename pack",
     "editFailTitle": "Unable to rename pack",
     "emptyTitle": "You have no saved base packs yet"
+  },
+  "Addon": {
+    "list": "Here is a list of all your addons",
+    "addAddon": "Create a new addon",
+    "connectionsCount": " connections are using this addon.",
+    "confirmDelete": "Confirm delete",
+    "deleteDescription": "Are you sure you want to delete this addon? It cannot be undone!.",
+    "cantDelete": "Cannot delete addon",
+    "reason": "There are a few connections using this addon so it cannot be deleted.",
+    "deleteFailTitle": "Unable to delete addon",
+    "deleteFailDescription": "Something went wrong while deleting the addon. Please try again later.",
+    "editTitle": "Rename addon",
+    "editFailTitle": "Unable to rename addon",
+    "emptyTitle": "You have no saved addons yet"
   },
   "ConnectionPage": {
     "noPayments": "This connection doesn't have any recorded payments."

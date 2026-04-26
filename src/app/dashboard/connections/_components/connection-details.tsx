@@ -12,6 +12,7 @@ import Link from "next/link";
 import type { Dispatch, SetStateAction } from "react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { markConnectionAsPaid } from "@/actions/payments";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,8 +23,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { markConnectionAsPaid } from "@/db/payments";
-import { tryCatch } from "@/lib/try-catch";
 import type { Connection } from "./columns";
 
 interface Props {
@@ -45,6 +44,11 @@ export default function ConnectionDetails({
   const paidThisMonth = connection.lastPayment
     ? isThisMonth(connection.lastPayment)
     : false;
+  const hasAddons =
+    connection.addonPrices > 0 || connection.addonLcoPrices > 0;
+  const totalLcoPrice = connection.basePack.lcoPrice + connection.addonLcoPrices;
+  const totalCustomerPrice =
+    connection.basePack.customerPrice + connection.addonPrices;
 
   const handleCopyPhone = async () => {
     if (connection?.phoneNumber) {
@@ -57,12 +61,11 @@ export default function ConnectionDetails({
   const markAsPaid = async () => {
     if (!connection) return;
     setMarkingAsPaid(true);
-    const { error } = await tryCatch(markConnectionAsPaid(connection.id));
+    const result = await markConnectionAsPaid(connection.id);
     setMarkingAsPaid(false);
 
-    if (error) {
-      console.error(error);
-      toast.error(error.message);
+    if (!result.success) {
+      toast.error(result.error);
       return;
     }
 
@@ -106,9 +109,25 @@ export default function ConnectionDetails({
             <h3 className="font-semibold text-sm text-primary mb-2">
               {connection.basePack.name}
             </h3>
-            <div className="flex justify-between text-sm font-semibold">
-              <p>LCO price: ₹{connection.basePack.lcoPrice}</p>
-              <p>MRP: ₹{connection.basePack.customerPrice}</p>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="font-semibold">LCO: ₹{totalLcoPrice}</p>
+                {hasAddons && (
+                  <p className="text-xs text-muted-foreground">
+                    Base ₹{connection.basePack.lcoPrice} + Add-ons ₹
+                    {connection.addonLcoPrices}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="font-semibold">MRP: ₹{totalCustomerPrice}</p>
+                {hasAddons && (
+                  <p className="text-xs text-muted-foreground">
+                    Base ₹{connection.basePack.customerPrice} + Add-ons ₹
+                    {connection.addonPrices}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 

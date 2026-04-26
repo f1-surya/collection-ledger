@@ -1,9 +1,8 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { isSameMonth, isThisMonth, subMonths } from "date-fns";
+import { format, isSameMonth, isThisMonth, subMonths } from "date-fns";
 import { Checkbox } from "@/components/ui/checkbox";
-import { format } from "date-fns";
 
 export type Connection = {
   id: string;
@@ -18,6 +17,8 @@ export type Connection = {
     customerPrice: number;
   };
   lastPayment: Date | null;
+  addonPrices: number;
+  addonLcoPrices: number;
 };
 
 export const columns: ColumnDef<Connection>[] = [
@@ -52,7 +53,7 @@ export const columns: ColumnDef<Connection>[] = [
   {
     id: "customerPrice",
     header: () => <div className="font-semibold">MRP ₹</div>,
-    accessorFn: (con) => con.basePack.customerPrice,
+    accessorFn: (con) => con.basePack.customerPrice + con.addonPrices,
   },
   {
     accessorKey: "lastPayment",

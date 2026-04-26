@@ -9,7 +9,13 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { db } from "@/db/drizzle";
-import { areas, basePacks, connections } from "@/db/schema";
+import {
+  addons,
+  areas,
+  basePacks,
+  connectionAddons,
+  connections,
+} from "@/db/schema";
 import { getOrg } from "@/lib/get-org";
 import Connections, { ConnectionsSkeleton } from "./_components/connections";
 import CreateConnection from "./_components/create";
@@ -31,6 +37,28 @@ const prepared = db
       lcoPrice: basePacks.lcoPrice,
       customerPrice: basePacks.customerPrice,
     },
+    addonPrices: sql<number>`
+      COALESCE(
+        (
+          SELECT SUM(${addons.customerPrice})
+          FROM ${addons}
+          JOIN ${connectionAddons} ON ${addons.id} = ${connectionAddons.addon}
+          WHERE ${connectionAddons.connection} = ${connections.id} AND ${connectionAddons.org} = ${sql.placeholder("orgId")}
+        ),
+        0
+      )::integer
+`,
+    addonLcoPrices: sql<number>`
+      COALESCE(
+        (
+          SELECT SUM(${addons.lcoPrice})
+          FROM ${addons}
+          JOIN ${connectionAddons} ON ${addons.id} = ${connectionAddons.addon}
+          WHERE ${connectionAddons.connection} = ${connections.id} AND ${connectionAddons.org} = ${sql.placeholder("orgId")}
+        ),
+        0
+      )::integer
+`,
   })
   .from(connections)
   .innerJoin(areas, eq(connections.area, areas.id))
