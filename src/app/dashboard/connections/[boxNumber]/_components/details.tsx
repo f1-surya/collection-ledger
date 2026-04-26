@@ -15,6 +15,11 @@ import dynamic from "next/dynamic";
 import { useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
+import {
+  deletePayment,
+  markConnectionAsPaid,
+  migrateConnection,
+} from "@/actions/payments";
 import type { Area } from "@/app/dashboard/areas/_components/areas";
 import type { BasePack } from "@/app/dashboard/base-packs/_components/types";
 import { Button } from "@/components/ui/button";
@@ -40,14 +45,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  deletePayment,
-  markConnectionAsPaid,
-  migrateConnection,
-} from "@/db/payments";
 import { fetcher } from "@/lib/fetcher";
-import { tryCatch } from "@/lib/try-catch";
 import type { Connection } from "../../_components/columns";
+import ConnectionAddons from "./connection-addons";
 import PaymentsHistory from "./payments";
 import type { Payment } from "./types";
 import type { ConnectionUpdateSchema } from "./update-connection";
@@ -55,8 +55,37 @@ import type { ConnectionUpdateSchema } from "./update-connection";
 const UpdateConnection = dynamic(() => import("./update-connection"));
 const MigrationDialog = dynamic(() => import("./migration-dialog"));
 
-export function Details({ currConnection }: { currConnection: Connection }) {
+type Addon = {
+  id: string;
+  name: string;
+  lcoPrice: number;
+  customerPrice: number;
+};
+
+type ConnectionAddon = {
+  id: string;
+  addon: Addon;
+};
+
+type AddonTotals = {
+  addonPrices: number;
+  addonLcoPrices: number;
+};
+
+export function Details({
+  currConnection,
+  addons,
+  connectionAddons,
+}: {
+  currConnection: Connection;
+  addons: Addon[];
+  connectionAddons: ConnectionAddon[];
+}) {
   const [connection, setConnection] = useState(currConnection);
+  const [addonTotals, setAddonTotals] = useState<AddonTotals>({
+    addonPrices: currConnection.addonPrices,
+    addonLcoPrices: currConnection.addonLcoPrices,
+  });
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [markingAsPaid, setMarkingAsPaid] = useState(false);
   const [basePackOpen, setBasePackOpen] = useState(false);
@@ -73,6 +102,11 @@ export function Details({ currConnection }: { currConnection: Connection }) {
   const paidThisMonth = connection.lastPayment
     ? isThisMonth(connection.lastPayment)
     : false;
+  const hasAddons =
+    addonTotals.addonPrices > 0 || addonTotals.addonLcoPrices > 0;
+  const totalLcoPrice = connection.basePack.lcoPrice + addonTotals.addonLcoPrices;
+  const totalCustomerPrice =
+    connection.basePack.customerPrice + addonTotals.addonPrices;
 
   const handleCopyPhone = async () => {
     if (connection?.phoneNumber) {
@@ -85,17 +119,16 @@ export function Details({ currConnection }: { currConnection: Connection }) {
   const markAsPaid = async () => {
     if (!connection) return;
     setMarkingAsPaid(true);
-    const { data, error } = await tryCatch(markConnectionAsPaid(connection.id));
+    const result = await markConnectionAsPaid(connection.id);
     setMarkingAsPaid(false);
 
-    if (error) {
-      console.error(error);
-      toast.error(error.message);
-    } else {
-      setConnection({ ...connection, lastPayment: data.date });
-      // @ts-expect-error Unnecessary error.
-      mutatePayments([data, ...payments]);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
     }
+
+    setConnection({ ...connection, lastPayment: result.data.date });
+    mutatePayments([result.data, ...payments]);
   };
 
   const onPackSelect = (id: string) => {
@@ -110,55 +143,54 @@ export function Details({ currConnection }: { currConnection: Connection }) {
     if (!selectedPack) return;
     setMigrating(true);
 
-    const { data: payment, error } = await tryCatch(
-      migrateConnection(connection.id, selectedPack.id),
-    );
+    const result = await migrateConnection(connection.id, selectedPack.id);
 
-    if (payment) {
-      mutatePayments([payment, ...payments]);
-      setConnection({
-        ...connection,
-        basePack: payment.to,
-        lastPayment: payment.date,
-      });
-      setSelectedPack(undefined);
-    } else {
-      toast.error(error.message);
+    if (!result.success) {
+      toast.error(result.error);
+      setMigrating(false);
+      return;
     }
+
+    const payment = result.data;
+    mutatePayments([payment, ...payments]);
+    setConnection({
+      ...connection,
+      basePack: payment.to ?? payment.currentPack,
+      lastPayment: payment.date,
+    });
+    setSelectedPack(undefined);
     setMigrating(false);
   };
 
   const deleteCurrentPayment = async (id: string) => {
-    const promise = deletePayment(id);
-    toast.promise(promise, {
-      loading: "Deleting payment...",
-      success: "Payment deleted successfully.",
-      error: "Something went wrong while deleting the payment.",
-    });
+    const loadingToast = toast.loading("Deleting payment...");
+    const result = await deletePayment(id);
+    toast.dismiss(loadingToast);
 
-    const { error } = await tryCatch(promise);
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
 
-    if (!error) {
-      mutatePayments(payments.filter((payment) => payment.id !== id));
-      // Update connection state based on the deleted payment
-      const payment = payments.find((p) => p.id === id);
-      const updatedPayments = payments.filter((p) => p.id !== id);
-      const lastPayment = updatedPayments[0];
-      if (lastPayment) {
-        setConnection({
-          ...connection,
-          basePack: lastPayment.to ?? lastPayment.currentPack,
-          lastPayment: lastPayment.date,
-        });
-      } else if (payment) {
-        setConnection({
-          ...connection,
-          basePack: payment.currentPack,
-          lastPayment: null,
-        });
-      }
-    } else {
-      toast.error(error.message);
+    toast.success("Payment deleted successfully.");
+    mutatePayments(payments.filter((payment) => payment.id !== id));
+
+    const payment = payments.find((p) => p.id === id);
+    const updatedPayments = payments.filter((p) => p.id !== id);
+    const lastPayment = updatedPayments[0];
+
+    if (lastPayment) {
+      setConnection({
+        ...connection,
+        basePack: lastPayment.to ?? lastPayment.currentPack,
+        lastPayment: lastPayment.date,
+      });
+    } else if (payment) {
+      setConnection({
+        ...connection,
+        basePack: payment.currentPack,
+        lastPayment: null,
+      });
     }
   };
 
@@ -281,9 +313,25 @@ export function Details({ currConnection }: { currConnection: Connection }) {
                 </PopoverContent>
               </Popover>
             </div>
-            <div className="flex justify-between text-sm font-semibold">
-              <p>LCO: ₹{connection.basePack.lcoPrice}</p>
-              <p>MRP: ₹{connection.basePack.customerPrice}</p>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <p className="font-semibold">LCO: ₹{totalLcoPrice}</p>
+                {hasAddons && (
+                  <p className="text-xs text-muted-foreground">
+                    Base ₹{connection.basePack.lcoPrice} + Add-ons ₹
+                    {addonTotals.addonLcoPrices}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p className="font-semibold">MRP: ₹{totalCustomerPrice}</p>
+                {hasAddons && (
+                  <p className="text-xs text-muted-foreground">
+                    Base ₹{connection.basePack.customerPrice} + Add-ons ₹
+                    {addonTotals.addonPrices}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -311,11 +359,19 @@ export function Details({ currConnection }: { currConnection: Connection }) {
           </Button>
         </CardFooter>
       </Card>
-      <PaymentsHistory
-        payments={payments}
-        deletePayment={deleteCurrentPayment}
-        loading={paymentsLoading}
-      />
+      <div className="flex-1 space-y-4">
+        <ConnectionAddons
+          connectionId={connection.id}
+          availableAddons={addons}
+          initialAddons={connectionAddons}
+          onAddonTotalsChange={setAddonTotals}
+        />
+        <PaymentsHistory
+          payments={payments}
+          deletePayment={deleteCurrentPayment}
+          loading={paymentsLoading}
+        />
+      </div>
       <MigrationDialog
         selectedPack={selectedPack}
         setSelectedPack={setSelectedPack}

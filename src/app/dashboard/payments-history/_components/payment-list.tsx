@@ -110,35 +110,58 @@ export default function PaymentList({
             </CardContent>
           </Card>
         ) : (
-          payments.map((payment, i) => (
-            <div key={payment.id}>
-              <div className="flex flex-row justify-between p-1">
-                <div>
-                  <h3 className="text-lg font-bold">
-                    {payment.connection.name}
-                  </h3>
-                  <div className="flex flex-col text-muted-foreground text-xs">
-                    {payment.isMigration ? (
-                      <span className="flex items-center gap-1">
-                        <span>{payment.currentPack.name}</span>
-                        <ArrowRight size={10} />
-                        <span className="text-blue-600">
-                          {payment.to?.name}
+          payments.map((payment, i) => {
+            const selectedPack = payment.isMigration
+              ? (payment.to ?? payment.currentPack)
+              : payment.currentPack;
+            const selectedPackId = selectedPack?.id;
+            const extraItems = (payment.items ?? []).filter(
+              (item) => item.id !== selectedPackId,
+            );
+            const addonCustomerPrice = extraItems.reduce(
+              (sum, item) => sum + item.customerPrice,
+              0,
+            );
+            const hasAddons = addonCustomerPrice > 0;
+
+            return (
+              <div key={payment.id}>
+                {0 !== i && <Separator className="w-full" />}
+                <div className="flex flex-row justify-between p-1 hover:bg-accent transition-colors">
+                  <div>
+                    <h3 className="text-lg font-bold">
+                      {payment.connection.name}
+                    </h3>
+                    <div className="flex flex-col text-muted-foreground text-xs">
+                      {payment.isMigration ? (
+                        <span className="flex items-center gap-1">
+                          <span>{payment.currentPack.name}</span>
+                          <ArrowRight size={10} />
+                          <span className="text-blue-600">
+                            {payment.to?.name}
+                          </span>
                         </span>
-                      </span>
-                    ) : (
-                      <span>{payment.currentPack.name}</span>
+                      ) : (
+                        <span>{payment.currentPack.name}</span>
+                      )}
+                      <span>{format(payment.date, "dd MMM yy")}</span>
+                    </div>
+                  </div>
+                  <div className="text-right flex flex-col items-end justify-center whitespace-nowrap">
+                    <p className="text-sm font-semibold">
+                      MRP: {formatCurrency(payment.customerPrice)}
+                    </p>
+                    {hasAddons && selectedPack && (
+                      <p className="text-xs text-muted-foreground">
+                        Base {formatCurrency(selectedPack.customerPrice)} +
+                        Add-ons {formatCurrency(addonCustomerPrice)}
+                      </p>
                     )}
-                    <span>{format(payment.date, "dd MMM yy")}</span>
                   </div>
                 </div>
-                <div className="text-sm font-semibold whitespace-nowrap">
-                  MRP: {formatCurrency(payment.customerPrice)}
-                </div>
               </div>
-              {payments.length - 1 !== i && <Separator className="w-full" />}
-            </div>
-          ))
+            );
+          })
         )}
       </div>
       <MyPagination pages={pages} />

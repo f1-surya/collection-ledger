@@ -50,19 +50,27 @@ export const addons = pgTable(
   (table) => [index("org_addons_index").on(table.org)],
 );
 
-export const connectionAddons = pgTable("connection_addons", {
-  id: text().primaryKey(),
-  connectionId: text()
-    .notNull()
-    .references(() => connections.id),
-  addonId: text()
-    .notNull()
-    .references(() => addons.id),
-  org: text()
-    .notNull()
-    .references(() => organization.id),
-  createdAt: timestamp({ withTimezone: true }).defaultNow(),
-});
+export const connectionAddons = pgTable(
+  "connection_addons",
+  {
+    id: text().primaryKey(),
+    connection: text()
+      .notNull()
+      .references(() => connections.id),
+    addon: text()
+      .notNull()
+      .references(() => addons.id),
+    org: text()
+      .notNull()
+      .references(() => organization.id),
+    createdAt: timestamp({ withTimezone: true }).defaultNow(),
+  },
+  (table) => [
+    index("org_ca_idx").on(table.org),
+    index("connection_ca_idx").on(table.connection),
+    index("addon_ca_idx").on(table.addon),
+  ],
+);
 
 export const connections = pgTable(
   "connection",
@@ -118,7 +126,7 @@ export const payments = pgTable(
     items: jsonb()
       .notNull()
       .$type<
-        [{ id: string; name: string; lcoPrice: number; customerPrice: number }]
+        { id: string; name: string; lcoPrice: number; customerPrice: number }[]
       >(),
     org: text()
       .notNull()
@@ -140,8 +148,12 @@ export const connectionAddonsRelations = relations(
   connectionAddons,
   ({ one }) => ({
     connection: one(connections, {
-      fields: [connectionAddons.connectionId],
+      fields: [connectionAddons.connection],
       references: [connections.id],
+    }),
+    addon: one(addons, {
+      fields: [connectionAddons.addon],
+      references: [addons.id],
     }),
   }),
 );

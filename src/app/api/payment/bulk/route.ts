@@ -4,7 +4,13 @@ import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import z from "zod";
 import { db } from "@/db/drizzle";
-import { basePacks, connections, payments } from "@/db/schema";
+import {
+  type addons,
+  basePacks,
+  connectionAddons,
+  connections,
+  payments,
+} from "@/db/schema";
 import { getOrg } from "@/lib/get-org";
 
 const schema = z.object({
@@ -60,30 +66,55 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  const allAddonRows = await db.query.connectionAddons.findMany({
+    where: eq(connectionAddons.org, org.id),
+    with: { addon: true },
+  });
+
+  const allAddons = allAddonRows.reduce<
+    Record<string, (typeof addons.$inferSelect)[]>
+  >((acc, row) => {
+    if (!acc[row.connection]) {
+      acc[row.connection] = [];
+    }
+    acc[row.connection].push(row.addon);
+    return acc;
+  }, {});
+
   await db.transaction(async (tx) => {
-    const newPayments = consToPay.map((con) => ({
-      id: nanoid(),
-      connection: con.id,
-      date: now,
-      currentPack: con.basePack.id,
-      lcoPrice: con.basePack.lcoPrice,
-      customerPrice: con.basePack.customerPrice,
-      items: [
-        {
-          id: con.basePack.id,
-          name: con.basePack.name,
-          lcoPrice: con.basePack.lcoPrice,
-          customerPrice: con.basePack.customerPrice,
+    const newPayments = consToPay.map((con) => {
+      const a = allAddons[con.id] ?? [];
+      const totals = a.reduce(
+        (acc, c) => {
+          acc.lco += c.lcoPrice;
+          acc.customer += c.customerPrice;
+          return acc;
         },
-      ],
-      org: org.id,
-    }));
+        { lco: 0, customer: 0 },
+      );
+
+      return {
+        id: nanoid(),
+        connection: con.id,
+        date: now,
+        currentPack: con.basePack.id,
+        lcoPrice: con.basePack.lcoPrice + totals.lco,
+        customerPrice: con.basePack.customerPrice + totals.customer,
+        items: [
+          ...a,
+          {
+            id: con.basePack.id,
+            name: con.basePack.name,
+            lcoPrice: con.basePack.lcoPrice,
+            customerPrice: con.basePack.customerPrice,
+          },
+        ],
+        org: org.id,
+      };
+    });
 
     await Promise.all([
-      tx
-        .insert(payments)
-        // @ts-expect-error It'll be okay in runtime
-        .values(newPayments),
+      tx.insert(payments).values(newPayments),
       tx
         .update(connections)
         .set({ lastPayment: now })
