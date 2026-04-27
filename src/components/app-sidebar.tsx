@@ -31,7 +31,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { authClient } from "@/lib/auth-client";
 
-const links = [
+export const links = [
   {
     name: "home",
     icon: Home,

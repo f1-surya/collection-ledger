@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { Goto } from "@/components/goto";
 import Navbar from "@/components/navbar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { getOrg } from "@/lib/get-org";
@@ -14,6 +15,7 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar />
+      <Goto />
       <Navbar>{children}</Navbar>
     </SidebarProvider>
   );
