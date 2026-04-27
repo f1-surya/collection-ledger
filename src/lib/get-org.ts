@@ -1,8 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { auth } from "./auth";
 
-export async function getOrg() {
+const resolveOrg = cache(async () => {
   const h = await headers();
   const session = await auth.api.getSession({ headers: h });
   const orgId = session?.session.activeOrganizationId;
@@ -27,4 +28,12 @@ export async function getOrg() {
   }
 
   redirect("/create-company");
+});
+
+export async function getOrg() {
+  return resolveOrg();
+}
+
+export async function ensureOrgContext() {
+  await resolveOrg();
 }
