@@ -216,10 +216,12 @@ export default function ConnectionAddons({
             </Button>
           </div>
         ))}
-        <div className="rounded-lg border bg-background p-3 text-sm font-medium flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-          <p>Total addon LCO: ₹{totalAddonLco}</p>
-          <p>Total addon MRP: ₹{totalAddonMrp}</p>
-        </div>
+        {connectionAddons.length > 0 && (
+          <div className="rounded-lg border bg-background p-3 text-sm font-medium flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <p>Total addon LCO: ₹{totalAddonLco}</p>
+            <p>Total addon MRP: ₹{totalAddonMrp}</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

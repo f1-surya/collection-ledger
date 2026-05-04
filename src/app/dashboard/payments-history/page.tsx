@@ -1,5 +1,5 @@
 import { endOfMonth, startOfMonth } from "date-fns";
-import { and, between, eq, type SQLWrapper } from "drizzle-orm";
+import { and, between, desc, eq, type SQLWrapper } from "drizzle-orm";
 import { db } from "@/db/drizzle";
 import { payments } from "@/db/schema";
 import { getOrg } from "@/lib/get-org";
@@ -56,6 +56,7 @@ export default async function Page({
         },
       },
     },
+    orderBy: desc(payments.date),
     limit: 20,
     offset: currPage * 20,
   });
