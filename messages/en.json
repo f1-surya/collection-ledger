@@ -27,7 +27,7 @@
     "paidConnections": "Paid Connections",
     "ofTotal": "{percent}% of total.",
     "monthlyRevenue": "Monthly Revenue",
-    "inactiveConnections": "Inactive Connections",
+    "unpaidConnections": "Unpaid Connections",
     "requiresAttention": "Requires attention",
     "paymentsByPack": "Payments by Pack ({month})",
     "noPaymentsThisMonth": "No payments recorded this month yet.",

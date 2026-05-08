@@ -1,4 +1,4 @@
-import { startOfMonth, subMonths } from "date-fns";
+import { startOfMonth} from "date-fns";
 import { eq, sql } from "drizzle-orm";
 import { AlertTriangle, TrendingUp, Users, Wallet } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -29,19 +29,19 @@ export function SummarySkeleton() {
 }
 
 export async function Summary({ orgId }: { orgId: string }) {
-  const lastMonth = subMonths(startOfMonth(new Date()), 1);
-  const start = startOfMonth(new Date());
+  const now = new Date();
+  const start = startOfMonth(now);
   const t = await getTranslations("Dashboard");
 
   const res = await db
     .select({
       totalConnections: sql<number>`count(*)`.mapWith(Number),
       activeConnections:
-        sql<number>`count(case when ${connections.lastPayment} >= ${lastMonth} then 1 end)`.mapWith(
+        sql<number>`count(case when ${connections.lastPayment} >= ${start} and ${connections.lastPayment} < ${now} then 1 end)`.mapWith(
           Number,
         ),
-      overduePayments:
-        sql<number>`count(case when ${connections.lastPayment} <= ${lastMonth} or ${connections.lastPayment} is null then 1 end)`.mapWith(
+      unpaidConnections:
+        sql<number>`count(case when ${connections.lastPayment} < ${start} or ${connections.lastPayment} is null then 1 end)`.mapWith(
           Number,
         ),
       monthlyRevenue: sql<number>`(
@@ -55,7 +55,7 @@ export async function Summary({ orgId }: { orgId: string }) {
   const {
     totalConnections,
     activeConnections,
-    overduePayments,
+    unpaidConnections,
     monthlyRevenue,
   } = res[0];
 
@@ -107,12 +107,12 @@ export async function Summary({ orgId }: { orgId: string }) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
-            {t("inactiveConnections")}
+            {t("unpaidConnections")}
           </CardTitle>
           <AlertTriangle className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{overduePayments}</div>
+          <div className="text-2xl font-bold">{unpaidConnections}</div>
           <p className="text-xs text-muted-foreground">
             {t("requiresAttention")}
           </p>
