@@ -27,7 +27,7 @@
     "paidConnections": "கட்டணம் செலுத்திய இணைப்புகள்",
     "ofTotal": "மொத்தத்தில் {percent}%",
     "monthlyRevenue": "மாத வருமானம்",
-    "inactiveConnections": "செயலற்ற இணைப்புகள்",
+    "unpaidConnections": "கட்டணம் செலுத்தப்படாத இணைப்புகள்",
     "requiresAttention": "கவனம் தேவை",
     "paymentsByPack": "பேக் அடிப்படையிலான கட்டணங்கள் ({month})",
     "noPaymentsThisMonth": "இந்த மாதத்திற்கு இன்னும் கட்டண பதிவுகள் இல்லை.",
