@@ -68,11 +68,11 @@ const prepared = db
   .offset(sql.placeholder("offset"))
   .prepare("connections");
 
-export const load: PageServerLoad = async ({ url, request }) => {
+export const load: PageServerLoad = async ({ url, request, locals }) => {
   const search = url.searchParams.get("search");
   const page = url.searchParams.get("page");
 
-  const org = await getOrg(request.headers);
+  const org = await getOrg(request.headers, locals);
 
   const q = search?.trim();
   const hasSearch = Boolean(q);

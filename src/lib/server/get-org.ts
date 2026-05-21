@@ -1,9 +1,12 @@
 import { redirect } from "@sveltejs/kit";
 import { auth } from "./auth";
 
-export async function getOrg(h: Headers) {
-  const session = await auth.api.getSession({ headers: h });
-  const orgId = session?.session.activeOrganizationId;
+export async function getOrg(h: Headers, locals: App.Locals) {
+  let session = locals.session;
+  if (!session) {
+    session = await auth.api.getSession({ headers: h });
+  }
+  const orgId = session?.activeOrganizationId;
 
   if (orgId) {
     return { id: orgId };
