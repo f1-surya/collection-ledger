@@ -1,7 +1,8 @@
 import { drizzle } from "drizzle-orm/neon-serverless";
-import * as schema from "@/db/schema";
+import * as schema from "./schema";
+import { DATABASE_URL } from "$env/static/private";
 
-const DB_URL = process.env.DATABASE_URL;
+const DB_URL = DATABASE_URL;
 if (!DB_URL) {
   throw new Error("DATABASE_URL not present in the environment");
 }

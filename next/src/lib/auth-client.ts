@@ -1,9 +1,9 @@
-import { createAuthClient } from "better-auth/svelte";
 import {
   inferOrgAdditionalFields,
   organizationClient,
 } from "better-auth/client/plugins";
-import type { auth } from "$lib/server/auth";
+import { createAuthClient } from "better-auth/react";
+import type { auth } from "@/lib/auth";
 
 export const authClient = createAuthClient({
   plugins: [
