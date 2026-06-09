@@ -4,8 +4,10 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Button } from '$lib/components/ui/button';
 	import type { ActionData } from './$types';
+	import Spinner from '$lib/components/ui/spinner/spinner.svelte';
 
 	let { form }: { form: ActionData } = $props();
+	let loading = $state(false);
 </script>
 
 <main class="flex h-dvh w-dvw items-center justify-center p-2">
@@ -14,7 +16,19 @@
 			<Card.Title class="text-xl">Login to continue</Card.Title>
 		</Card.Header>
 		<Card.Content>
-			<form method="post" action="?/signInEmail" use:enhance class="space-y-3 text-left">
+			<form
+				method="post"
+				action="?/signInEmail"
+				use:enhance={() => {
+					loading = true;
+
+					return async ({ update }) => {
+						await update();
+						loading = false;
+					};
+				}}
+				class="space-y-3 text-left"
+			>
 				<div class="space-y-1.5">
 					<label for="email" class="text-sm font-medium">Email</label>
 					<Input id="email" name="email" type="email" required autocomplete="email" />
@@ -32,7 +46,13 @@
 				{#if form?.message}
 					<p class="text-destructive text-sm">{form.message}</p>
 				{/if}
-				<Button type="submit" class="w-full">Login</Button>
+				<Button type="submit" class="w-full"
+					>{#if loading}
+						<Spinner />
+					{:else}
+						Login
+					{/if}
+				</Button>
 			</form>
 		</Card.Content>
 		<Card.Footer>
